@@ -108,7 +108,7 @@ p {
 .detail-card,
 .form-card,
 .state-box,
-.map-placeholder {
+.map-container {
   border: 1px solid var(--line);
   border-radius: 20px;
   background: var(--surface);
@@ -408,16 +408,37 @@ p {
   margin: 8px 0;
 }
 
-.map-placeholder {
+.map-container {
+  position: relative;
+  min-height: 420px;
+  overflow: hidden;
+}
+
+.map-container .map-renderer {
+  width: 100%;
+  min-height: 420px;
+}
+
+.map-error {
+  position: absolute;
+  inset: 0;
   display: grid;
   place-items: center;
-  min-height: 360px;
   padding: 24px;
   text-align: center;
-  background-image:
-    linear-gradient(#e2e8f0 1px, transparent 1px),
-    linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
-  background-size: 28px 28px;
+  color: var(--danger);
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.kakao-map-info-window {
+  padding: 12px 16px;
+  min-width: 180px;
+}
+
+.kakao-map-info-window strong {
+  display: block;
+  margin-bottom: 6px;
 }
 
 .info-card,
