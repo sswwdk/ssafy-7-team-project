@@ -1,0 +1,65 @@
+{
+  "region": "서울",
+  "items": [
+    {
+      "id": "seoul-tour-001",
+      "category": "tourism",
+      "name": "경복궁",
+      "address": "서울특별시 종로구 사직로 161",
+      "description": "조선 왕조의 법궁으로 서울의 대표적인 역사 관광지입니다.",
+      "latitude": 37.579617,
+      "longitude": 126.977041,
+      "tags": ["궁궐", "역사", "종로"],
+      "startDate": null,
+      "endDate": null
+    },
+    {
+      "id": "seoul-tour-002",
+      "category": "tourism",
+      "name": "서울숲",
+      "address": "서울특별시 성동구 뚝섬로 273",
+      "description": "산책과 휴식을 즐길 수 있는 도심 공원입니다.",
+      "latitude": 37.544387,
+      "longitude": 127.037442,
+      "tags": ["공원", "산책", "성동"],
+      "startDate": null,
+      "endDate": null
+    },
+    {
+      "id": "seoul-food-001",
+      "category": "food",
+      "name": "광장시장 먹거리 골목",
+      "address": "서울특별시 종로구 창경궁로 88",
+      "description": "다양한 전통시장 먹거리를 경험할 수 있는 장소입니다.",
+      "latitude": 37.570122,
+      "longitude": 126.999655,
+      "tags": ["시장", "먹거리", "종로"],
+      "startDate": null,
+      "endDate": null
+    },
+    {
+      "id": "seoul-festival-001",
+      "category": "festival",
+      "name": "서울 여름 문화축제 예시",
+      "address": "서울특별시 중구 세종대로",
+      "description": "실제 제공 JSON으로 교체해야 하는 캘린더 구조 확인용 샘플입니다.",
+      "latitude": 37.566295,
+      "longitude": 126.977945,
+      "tags": ["축제", "여름", "중구"],
+      "startDate": "2026-07-20",
+      "endDate": "2026-07-22"
+    },
+    {
+      "id": "seoul-festival-002",
+      "category": "festival",
+      "name": "한강 야간축제 예시",
+      "address": "서울특별시 영등포구 여의동로 330",
+      "description": "날짜 필드와 지도 좌표 연동을 점검하기 위한 샘플입니다.",
+      "latitude": 37.528472,
+      "longitude": 126.934233,
+      "tags": ["축제", "한강", "야간"],
+      "startDate": "2026-08-01",
+      "endDate": "2026-08-05"
+    }
+  ]
+}
