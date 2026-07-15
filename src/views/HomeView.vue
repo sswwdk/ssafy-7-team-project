@@ -18,6 +18,8 @@ const isWeatherLoading = ref(false)
 const weatherController = new AbortController()
 
 async function loadWeather() {
+  if (isWeatherLoading.value) return
+
   isWeatherLoading.value = true
   weatherError.value = ''
 
@@ -32,12 +34,22 @@ async function loadWeather() {
   }
 }
 
+function refreshWeatherWhenVisible() {
+  if (document.visibilityState === 'visible') {
+    loadWeather()
+  }
+}
+
 onMounted(() => {
   refreshPosts()
   loadWeather()
+  document.addEventListener('visibilitychange', refreshWeatherWhenVisible)
 })
 
-onUnmounted(() => weatherController.abort())
+onUnmounted(() => {
+  document.removeEventListener('visibilitychange', refreshWeatherWhenVisible)
+  weatherController.abort()
+})
 </script>
 
 <template>

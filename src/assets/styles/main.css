@@ -772,6 +772,10 @@ p {
   gap: 20px;
 }
 
+.festival-page-heading {
+  flex-wrap: wrap;
+}
+
 .festival-page-heading h1 {
   margin-bottom: 10px;
 }
@@ -783,6 +787,48 @@ p {
   border: 1px solid #a7f3d0;
   border-radius: 14px;
   background: #ecfdf5;
+}
+
+.festival-heading-widgets {
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.festival-weather-brief {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 190px;
+  padding: 12px 14px;
+  border: 1px solid #bae6fd;
+  border-radius: 14px;
+  background: #f0f9ff;
+}
+
+.festival-weather-brief div {
+  display: grid;
+  gap: 3px;
+}
+
+.festival-weather-brief small {
+  color: var(--muted);
+}
+
+.festival-weather-brief button {
+  padding: 0;
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.festival-weather-icon {
+  font-size: 2rem;
+  line-height: 1;
 }
 
 .festival-live-time > span {
@@ -1307,6 +1353,11 @@ p {
   background: #102a1c;
 }
 
+:root[data-theme='dark'] .festival-weather-brief {
+  border-color: #164e63;
+  background: #082f49;
+}
+
 :root[data-theme='dark'] .festival-summary-card.status-upcoming {
   border-color: #831843;
   background: #321326;
@@ -1421,6 +1472,16 @@ p {
   }
 
   .festival-live-time {
+    min-width: 0;
+  }
+
+  .festival-heading-widgets {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .festival-weather-brief {
     min-width: 0;
   }
 
