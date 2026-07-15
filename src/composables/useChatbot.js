@@ -1,34 +1,38 @@
 import { ref } from 'vue'
-import { CHATBOT_POST_CONTEXT_LIMIT, CHATBOT_REGION_CONTEXT_LIMIT } from '@/constants/chatbot'
+import {
+  CHATBOT_POST_CONTEXT_LIMIT,
+  CHATBOT_REGION_CONTEXT_LIMIT,
+  CHATBOT_TOURISM_CONTEXT_LIMIT
+} from '@/constants/chatbot'
 import { getPosts } from '@/services/postStorageService'
 import { requestChatbotAnswer } from '@/services/openaiService'
-import { getFestivalItemsForMonth, searchRegionData } from '@/services/regionDataService'
+import {
+  getDistrictOptions,
+  getFestivalItemsForMonth,
+  getTourismItems,
+  searchRegionData
+} from '@/services/regionDataService'
 
 const messages = ref([
   {
     id: 'welcome',
     role: 'assistant',
-    content: '안녕하세요. 서울 관광지, 축제, 맛집과 현재 브라우저의 커뮤니티 게시글을 찾아드릴게요.'
+    content: `안녕하세요!
+
+서울 축제, 관광지, 커뮤니티 정보를 찾아드릴게요.
+
+이렇게 질문해 보세요.
+ - 이번 달 서울 축제 알려줘
+ - 중구에서 하는 축제 알려줘
+ - 강남구 관광지 알려줘
+ - 커뮤니티에는 어떤 글이 있어?`
   }
 ])
 const isLoading = ref(false)
 const errorMessage = ref('')
 
-function searchCommunityPosts(query) {
-  const keyword = query.trim().toLowerCase()
-
-  if (!keyword) {
-    return []
-  }
-
-  const tokens = keyword.split(/\s+/).filter(Boolean)
-
-  return getPosts()
-    .filter((post) => {
-      const searchableText = `${post.title} ${post.content} ${post.category}`.toLowerCase()
-      return tokens.some((token) => searchableText.includes(token))
-    })
-    .slice(0, CHATBOT_POST_CONTEXT_LIMIT)
+function getRecentCommunityPosts() {
+  return getPosts().slice(0, CHATBOT_POST_CONTEXT_LIMIT)
 }
 
 function getRequestedFestivalMonth(query, referenceDate = new Date()) {
@@ -62,17 +66,44 @@ function getRequestedFestivalMonth(query, referenceDate = new Date()) {
     return new Date(referenceDate.getFullYear(), Number(monthMatch[1]) - 1, 1)
   }
 
-  return null
+  return new Date(referenceDate.getFullYear(), referenceDate.getMonth(), 1)
 }
 
-function searchChatbotRegionData(query) {
+function getRequestedDistrictName(query) {
+  return getDistrictOptions().find(({ name }) => query.includes(name))?.name || ''
+}
+
+function searchChatbotContext(query) {
+  const districtName = getRequestedDistrictName(query)
+
+  if (/관광지/.test(query)) {
+    const tourismItems = getTourismItems(districtName)
+
+    return {
+      regionMatches: tourismItems.slice(0, CHATBOT_TOURISM_CONTEXT_LIMIT),
+      tourismContext: {
+        districtName: districtName || '서울',
+        totalCount: tourismItems.length
+      },
+      hideCommunityPosts: true
+    }
+  }
+
   const requestedFestivalMonth = getRequestedFestivalMonth(query)
 
   if (requestedFestivalMonth) {
-    return getFestivalItemsForMonth(requestedFestivalMonth)
+    return {
+      regionMatches: getFestivalItemsForMonth(requestedFestivalMonth, districtName),
+      tourismContext: null,
+      hideCommunityPosts: true
+    }
   }
 
-  return searchRegionData(query, CHATBOT_REGION_CONTEXT_LIMIT)
+  return {
+    regionMatches: searchRegionData(query, CHATBOT_REGION_CONTEXT_LIMIT),
+    tourismContext: null,
+    hideCommunityPosts: false
+  }
 }
 
 export function useChatbot() {
@@ -92,10 +123,12 @@ export function useChatbot() {
     isLoading.value = true
 
     try {
+      const chatbotContext = searchChatbotContext(question)
       const answer = await requestChatbotAnswer({
         question,
-        regionMatches: searchChatbotRegionData(question),
-        postMatches: searchCommunityPosts(question),
+        regionMatches: chatbotContext.regionMatches,
+        postMatches: chatbotContext.hideCommunityPosts ? [] : getRecentCommunityPosts(),
+        tourismContext: chatbotContext.tourismContext,
         currentDate: new Date()
       })
 

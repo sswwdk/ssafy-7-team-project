@@ -1040,6 +1040,13 @@ p {
   background: #fff;
 }
 
+.chat-map-link {
+  color: var(--primary);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .chat-row-user .chat-message {
   color: #fff;
   background: var(--primary);
