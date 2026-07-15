@@ -134,7 +134,7 @@ function toggleDistrict(code) {
 function toggleCategory(code) {
   if (!code) {
     selectedCategoryCodes.value = []
-    isAllCategoriesSelected.value = true
+    isAllCategoriesSelected.value = !isAllCategoriesSelected.value
     return
   }
 
