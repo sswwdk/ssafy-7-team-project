@@ -1,14 +1,33 @@
 <script setup>
 import { computed, ref, onMounted, watch } from 'vue'
 import EmptyState from '@/components/common/EmptyState.vue'
-import { getDistrictOptions, getMapItems } from '@/services/regionDataService'
+import { getContentTypeOptions, getDistrictOptions, getMapItems } from '@/services/regionDataService'
 
 const mapContainer = ref(null)
+const mapSection = ref(null)
 const mapError = ref('')
 const apiKey = import.meta.env.VITE_KAKAO_MAP_API_KEY?.trim()
 const selectedDistrictCodes = ref([])
+const selectedCategoryCode = ref('12')
+const searchQuery = ref('')
 const districtOptions = getDistrictOptions()
-const filteredMapItems = computed(() => getMapItems(selectedDistrictCodes.value.join(',')))
+const contentTypeOptions = getContentTypeOptions()
+const mapItems = computed(() =>
+  getMapItems(selectedDistrictCodes.value.join(','), selectedCategoryCode.value)
+)
+const filteredMapItems = computed(() => {
+  const keyword = searchQuery.value.trim().toLowerCase()
+
+  if (!keyword) {
+    return mapItems.value
+  }
+
+  return mapItems.value.filter((item) =>
+    [item.name, item.address, item.districtName, item.category]
+      .some((value) => String(value || '').toLowerCase().includes(keyword))
+  )
+})
+const MARKER_VERTICAL_OFFSET = 90
 const districtCenterMap = Object.freeze({
   110: { lat: 37.5704, lng: 126.9820 },
   140: { lat: 37.5637, lng: 126.9955 },
@@ -27,37 +46,45 @@ const districtCenterMap = Object.freeze({
   470: { lat: 37.5175, lng: 126.8660 },
   500: { lat: 37.5509, lng: 126.8495 },
   530: { lat: 37.4952, lng: 126.8870 },
-  560: { lat: 37.4567, lng: 126.8950 },
-  590: { lat: 37.5261, lng: 126.8960 },
-  650: { lat: 37.5124, lng: 126.9390 },
-  680: { lat: 37.4654, lng: 126.9430 },
-  710: { lat: 37.4836, lng: 127.0328 },
-  740: { lat: 37.4959, lng: 127.0667 },
-  770: { lat: 37.5146, lng: 127.1050 },
-  800: { lat: 37.5300, lng: 127.1230 },
+  545: { lat: 37.4567, lng: 126.8950 },
+  560: { lat: 37.5261, lng: 126.8960 },
+  590: { lat: 37.5124, lng: 126.9390 },
+  620: { lat: 37.4654, lng: 126.9430 },
+  650: { lat: 37.4836, lng: 127.0328 },
+  680: { lat: 37.4959, lng: 127.0667 },
+  710: { lat: 37.5146, lng: 127.1050 },
+  740: { lat: 37.5300, lng: 127.1230 },
 })
 let mapInstance = null
 let kakaoMapsApi = null
 let markers = []
 let activeInfoWindow = null
 let markerStates = {}
+const markerImageCache = new Map()
 
-function createYellowMarkerImage(kakao) {
+function createCategoryMarkerImage(kakao, item) {
+  if (markerImageCache.has(item.categoryCode)) {
+    return markerImageCache.get(item.categoryCode)
+  }
+
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
-      <path fill="#FACC15" stroke="#92400E" stroke-width="1.5" d="M14 1.5c-5.2 0-9.5 4.3-9.5 9.5 0 7.1 9.5 15 9.5 15s9.5-7.9 9.5-15C23.5 5.8 19.2 1.5 14 1.5z"/>
-      <circle cx="14" cy="11" r="3.8" fill="#FFF7A8"/>
+      <path fill="${item.markerColor}" stroke="${item.markerStrokeColor}" stroke-width="1.5" d="M14 1.5c-5.2 0-9.5 4.3-9.5 9.5 0 7.1 9.5 15 9.5 15s9.5-7.9 9.5-15C23.5 5.8 19.2 1.5 14 1.5z"/>
+      <circle cx="14" cy="11" r="3.8" fill="#FFFFFF" fill-opacity="0.78"/>
     </svg>
   `
   const encoded = encodeURIComponent(svg)
 
-  return new kakao.maps.MarkerImage(
+  const markerImage = new kakao.maps.MarkerImage(
     `data:image/svg+xml;charset=utf-8,${encoded}`,
     new kakao.maps.Size(24, 28),
     {
       offset: new kakao.maps.Point(12, 28),
     }
   )
+
+  markerImageCache.set(item.categoryCode, markerImage)
+  return markerImage
 }
 
 function clearMarkers() {
@@ -77,10 +104,11 @@ function openInfoWindow(item, marker, infowindow) {
   }
 
   const position = new kakaoMapsApi.maps.LatLng(item.latitude, item.longitude)
-  mapInstance.panTo(position)
   mapInstance.setLevel(6)
 
   infowindow.open(mapInstance, marker)
+  mapInstance.setCenter(position)
+  mapInstance.panBy(0, -MARKER_VERTICAL_OFFSET)
   activeInfoWindow = infowindow
 }
 
@@ -122,19 +150,19 @@ function renderMap() {
 
   const targetCenter = getTargetCenter()
 
-  if (!filteredMapItems.value.length) {
+  if (!mapItems.value.length) {
     mapInstance.setCenter(targetCenter)
     mapInstance.setLevel(7)
     return
   }
 
-  filteredMapItems.value.forEach((item) => {
+  mapItems.value.forEach((item) => {
     const position = new kakaoMapsApi.maps.LatLng(item.latitude, item.longitude)
 
     const marker = new kakaoMapsApi.maps.Marker({
       position,
       map: mapInstance,
-      image: createYellowMarkerImage(kakaoMapsApi),
+      image: createCategoryMarkerImage(kakaoMapsApi, item),
     })
 
     const infowindow = new kakaoMapsApi.maps.InfoWindow({
@@ -146,6 +174,7 @@ function renderMap() {
         </div>
       `,
       removable: true,
+      disableAutoPan: true,
     })
 
     kakaoMapsApi.maps.event.addListener(marker, 'click', () => {
@@ -167,6 +196,7 @@ function handleCardClick(item) {
   }
 
   openInfoWindow(item, markerState.marker, markerState.infowindow)
+  mapSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 function loadKakaoScript() {
@@ -220,7 +250,7 @@ onMounted(async () => {
   }
 })
 
-watch(selectedDistrictCodes, () => {
+watch([selectedDistrictCodes, selectedCategoryCode], () => {
   renderMap()
 }, { deep: true })
 </script>
@@ -235,31 +265,94 @@ watch(selectedDistrictCodes, () => {
       </p>
     </div>
 
-    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; padding: 12px; border: 1px solid #bbf7d0; border-radius: 12px; background: linear-gradient(90deg, #f0fdf4 0%, #ecfdf5 100%); box-shadow: 0 1px 3px rgba(16, 185, 129, 0.1);">
-      <button
-        type="button"
-        :style="!selectedDistrictCodes.length ? { background: '#16a34a', color: '#fff', borderColor: '#16a34a' } : { background: '#fff', color: '#111827', borderColor: '#d1d5db' }"
-        @click="selectedDistrictCodes = []"
-        style="padding: 6px 12px; border: 1px solid #d1d5db; border-radius: 999px; cursor: pointer; transition: all 0.2s ease;"
-      >
-        전체 서울
-      </button>
-      <button
-        v-for="district in districtOptions"
-        :key="district.code"
-        type="button"
-        :style="selectedDistrictCodes.includes(district.code) ? { background: '#16a34a', color: '#fff', borderColor: '#16a34a' } : { background: '#fff', color: '#111827', borderColor: '#d1d5db' }"
-        @click="toggleDistrict(district.code)"
-        style="padding: 6px 12px; border: 1px solid #d1d5db; border-radius: 999px; cursor: pointer; transition: all 0.2s ease;"
-      >
-        {{ district.name }}
-      </button>
+    <div class="map-region-filter" aria-label="지역 선택 필터">
+      <strong>지역 선택</strong>
+      <div class="map-region-buttons">
+        <button
+          type="button"
+          class="map-region-button"
+          :style="!selectedDistrictCodes.length ? { background: '#16a34a', color: '#fff', borderColor: '#16a34a' } : { background: '#fff', color: '#111827', borderColor: '#d1d5db' }"
+          @click="selectedDistrictCodes = []"
+        >
+          전체 서울
+        </button>
+        <button
+          v-for="district in districtOptions"
+          :key="district.code"
+          type="button"
+          class="map-region-button"
+          :style="selectedDistrictCodes.includes(district.code) ? { background: '#16a34a', color: '#fff', borderColor: '#16a34a' } : { background: '#fff', color: '#111827', borderColor: '#d1d5db' }"
+          @click="toggleDistrict(district.code)"
+        >
+          {{ district.name }}
+        </button>
+      </div>
     </div>
 
-    <section class="map-container" aria-label="지도 영역">
+    <div class="map-category-filter" aria-label="장소 종류 필터">
+      <strong>장소 종류</strong>
+      <div class="map-category-buttons">
+        <button
+          type="button"
+          class="map-category-button"
+          :class="{ 'is-active': !selectedCategoryCode }"
+          :aria-pressed="!selectedCategoryCode"
+          @click="selectedCategoryCode = ''"
+        >
+          <span class="map-category-all-icon" aria-hidden="true"></span>
+          전체
+        </button>
+        <button
+          v-for="contentType in contentTypeOptions"
+          :key="contentType.code"
+          type="button"
+          class="map-category-button"
+          :class="{ 'is-active': selectedCategoryCode === contentType.code }"
+          :aria-pressed="selectedCategoryCode === contentType.code"
+          @click="selectedCategoryCode = contentType.code"
+        >
+          <span
+            class="map-category-color"
+            :style="{ backgroundColor: contentType.color }"
+            aria-hidden="true"
+          ></span>
+          {{ contentType.name }}
+        </button>
+      </div>
+    </div>
+
+    <section ref="mapSection" class="map-container" aria-label="지도 영역">
       <div ref="mapContainer" class="map-renderer"></div>
       <div v-if="mapError" class="map-error">
         {{ mapError }}
+      </div>
+    </section>
+
+    <section class="map-list-toolbar" aria-label="장소 목록 검색">
+      <div>
+        <strong>장소 목록</strong>
+        <p>
+          검색 결과 {{ filteredMapItems.length }}개
+          <span v-if="searchQuery">/ 필터 전체 {{ mapItems.length }}개</span>
+        </p>
+      </div>
+      <div class="map-search-field">
+        <label class="sr-only" for="map-place-search">장소 이름, 주소 또는 지역 검색</label>
+        <input
+          id="map-place-search"
+          v-model="searchQuery"
+          class="text-input"
+          type="search"
+          placeholder="장소 이름, 주소, 지역 검색"
+        />
+        <button
+          v-if="searchQuery"
+          type="button"
+          class="button button-ghost"
+          @click="searchQuery = ''"
+        >
+          초기화
+        </button>
       </div>
     </section>
 
@@ -267,16 +360,29 @@ watch(selectedDistrictCodes, () => {
       <article
         v-for="item in filteredMapItems"
         :key="item.id"
-        class="info-card"
-        @click="handleCardClick(item)"
-        style="cursor: pointer;"
+        class="info-card category-themed-card"
+        :style="{
+          '--category-color': item.markerColor,
+          '--category-stroke-color': item.markerStrokeColor,
+        }"
       >
         <span class="badge">{{ item.category }}</span>
         <h2>{{ item.name }}</h2>
         <p>{{ item.address }}</p>
-        <small>{{ item.latitude }}, {{ item.longitude }}</small>
+        <button
+          type="button"
+          class="button button-secondary map-marker-button"
+          @click="handleCardClick(item)"
+        >
+          지도에서 보기
+        </button>
       </article>
     </div>
-    <EmptyState v-else title="좌표가 있는 지역정보가 없습니다." />
+    <EmptyState
+      v-else-if="searchQuery"
+      title="검색 결과가 없습니다."
+      description="다른 장소 이름, 주소 또는 지역명을 입력해 보세요."
+    />
+    <EmptyState v-else title="선택한 필터에 해당하는 장소가 없습니다." />
   </div>
 </template>
