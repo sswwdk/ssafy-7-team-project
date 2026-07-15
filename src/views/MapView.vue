@@ -137,7 +137,8 @@ function applyRequestedPlaceFilter() {
     return
   }
 
-  selectedCategoryCode.value = item.categoryCode
+  selectedCategoryCodes.value = [item.categoryCode]
+  isAllCategoriesSelected.value = false
   selectedDistrictCodes.value = item.districtCode ? [item.districtCode] : []
 }
 
