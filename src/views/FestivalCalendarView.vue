@@ -8,6 +8,7 @@ const festivals = getFestivalItems()
 const now = ref(new Date())
 const currentMonth = ref(new Date(now.value.getFullYear(), now.value.getMonth(), 1))
 const selectedDateKey = ref(formatDateKey(now.value))
+const selectedStatus = ref('month')
 const weekDays = Object.freeze(['일', '월', '화', '수', '목', '금', '토'])
 let clockTimer = null
 
@@ -46,6 +47,34 @@ function isFestivalOnDate(festival, dateKey) {
 
 function selectDate(dateKey) {
   selectedDateKey.value = dateKey
+
+  if (selectedStatus.value === 'month') {
+    selectedStatus.value = 'day'
+  }
+}
+
+function setStatusFilter(status) {
+  selectedStatus.value = status
+
+  if (status === 'month') {
+    selectedDateKey.value = formatDateKey(currentMonth.value)
+    return
+  }
+
+  if (status === 'upcoming') {
+    const nearestUpcomingFestival = festivals
+      .filter((festival) => getFestivalStatus(festival) === 'upcoming')
+      .sort((left, right) => left.startDate.localeCompare(right.startDate))[0]
+
+    if (nearestUpcomingFestival) {
+      const festivalDate = new Date(`${nearestUpcomingFestival.startDate}T00:00:00`)
+      currentMonth.value = new Date(festivalDate.getFullYear(), festivalDate.getMonth(), 1)
+      selectedDateKey.value = nearestUpcomingFestival.startDate
+    }
+    return
+  }
+
+  goToToday()
 }
 
 function changeMonth(offset) {
@@ -92,6 +121,29 @@ const selectedDateLabel = computed(() =>
   }).format(new Date(`${selectedDateKey.value}T00:00:00`))
 )
 
+const scheduleTitle = computed(() =>
+  selectedStatus.value === 'month' ? `${monthTitle.value} 전체 축제` : selectedDateLabel.value
+)
+
+const visibleFestivals = computed(() => {
+  if (selectedStatus.value === 'month') {
+    const year = currentMonth.value.getFullYear()
+    const month = currentMonth.value.getMonth()
+    const monthStart = formatDateKey(new Date(year, month, 1))
+    const monthEnd = formatDateKey(new Date(year, month + 1, 0))
+
+    return festivals.filter(
+      (festival) => festival.startDate <= monthEnd && festival.endDate >= monthStart
+    )
+  }
+
+  if (selectedStatus.value === 'day') {
+    return festivals
+  }
+
+  return festivals.filter((festival) => getFestivalStatus(festival) === selectedStatus.value)
+})
+
 const calendarDays = computed(() => {
   const year = currentMonth.value.getFullYear()
   const month = currentMonth.value.getMonth()
@@ -102,7 +154,9 @@ const calendarDays = computed(() => {
     const date = new Date(gridStart)
     date.setDate(gridStart.getDate() + index)
     const key = formatDateKey(date)
-    const dayFestivals = festivals.filter((festival) => isFestivalOnDate(festival, key))
+    const dayFestivals = visibleFestivals.value.filter((festival) =>
+      isFestivalOnDate(festival, key)
+    )
 
     return {
       key,
@@ -115,8 +169,12 @@ const calendarDays = computed(() => {
 })
 
 const selectedFestivals = computed(() =>
-  festivals
-    .filter((festival) => isFestivalOnDate(festival, selectedDateKey.value))
+  visibleFestivals.value
+    .filter((festival) =>
+      selectedStatus.value === 'month'
+        ? true
+        : isFestivalOnDate(festival, selectedDateKey.value)
+    )
     .sort((left, right) => left.startDate.localeCompare(right.startDate))
 )
 
@@ -170,18 +228,36 @@ onUnmounted(() => {
     </div>
 
     <section class="festival-summary-grid" aria-label="축제 일정 현황">
-      <article class="festival-summary-card status-ongoing">
+      <button
+        type="button"
+        class="festival-summary-card status-ongoing"
+        :class="{ 'is-active': selectedStatus === 'ongoing' }"
+        :aria-pressed="selectedStatus === 'ongoing'"
+        @click="setStatusFilter('ongoing')"
+      >
         <span>진행 중</span>
         <strong>{{ festivalStatusSummary.ongoing }}</strong>
-      </article>
-      <article class="festival-summary-card status-upcoming">
+      </button>
+      <button
+        type="button"
+        class="festival-summary-card status-upcoming"
+        :class="{ 'is-active': selectedStatus === 'upcoming' }"
+        :aria-pressed="selectedStatus === 'upcoming'"
+        @click="setStatusFilter('upcoming')"
+      >
         <span>예정</span>
         <strong>{{ festivalStatusSummary.upcoming }}</strong>
-      </article>
-      <article class="festival-summary-card">
-        <span>{{ monthTitle }} 일정</span>
+      </button>
+      <button
+        type="button"
+        class="festival-summary-card"
+        :class="{ 'is-active': selectedStatus === 'month' }"
+        :aria-pressed="selectedStatus === 'month'"
+        @click="setStatusFilter('month')"
+      >
+        <span>{{ monthTitle }} 전체</span>
         <strong>{{ monthlyFestivalCount }}</strong>
-      </article>
+      </button>
     </section>
 
     <section class="festival-calendar-card">
@@ -245,7 +321,7 @@ onUnmounted(() => {
       <div class="section-heading festival-schedule-heading">
         <div>
           <p class="eyebrow">Selected Date</p>
-          <h2>{{ selectedDateLabel }}</h2>
+          <h2>{{ scheduleTitle }}</h2>
         </div>
         <strong>{{ selectedFestivals.length }}개 일정</strong>
       </div>

@@ -10,6 +10,7 @@ const apiKey = import.meta.env.VITE_KAKAO_MAP_API_KEY?.trim()
 const selectedDistrictCodes = ref([])
 const selectedCategoryCode = ref('12')
 const searchQuery = ref('')
+const listViewMode = ref('card')
 const districtOptions = getDistrictOptions()
 const contentTypeOptions = getContentTypeOptions()
 const mapItems = computed(() =>
@@ -271,6 +272,7 @@ watch([selectedDistrictCodes, selectedCategoryCode], () => {
         <button
           type="button"
           class="map-region-button"
+          :class="{ 'is-active': !selectedDistrictCodes.length }"
           :style="!selectedDistrictCodes.length ? { background: '#16a34a', color: '#fff', borderColor: '#16a34a' } : { background: '#fff', color: '#111827', borderColor: '#d1d5db' }"
           @click="selectedDistrictCodes = []"
         >
@@ -281,6 +283,7 @@ watch([selectedDistrictCodes, selectedCategoryCode], () => {
           :key="district.code"
           type="button"
           class="map-region-button"
+          :class="{ 'is-active': selectedDistrictCodes.includes(district.code) }"
           :style="selectedDistrictCodes.includes(district.code) ? { background: '#16a34a', color: '#fff', borderColor: '#16a34a' } : { background: '#fff', color: '#111827', borderColor: '#d1d5db' }"
           @click="toggleDistrict(district.code)"
         >
@@ -336,27 +339,51 @@ watch([selectedDistrictCodes, selectedCategoryCode], () => {
           <span v-if="searchQuery">/ 필터 전체 {{ mapItems.length }}개</span>
         </p>
       </div>
-      <div class="map-search-field">
-        <label class="sr-only" for="map-place-search">장소 이름, 주소 또는 지역 검색</label>
-        <input
-          id="map-place-search"
-          v-model="searchQuery"
-          class="text-input"
-          type="search"
-          placeholder="장소 이름, 주소, 지역 검색"
-        />
-        <button
-          v-if="searchQuery"
-          type="button"
-          class="button button-ghost"
-          @click="searchQuery = ''"
-        >
-          초기화
-        </button>
+      <div class="map-list-controls">
+        <div class="map-view-toggle" role="group" aria-label="장소 목록 보기 방식">
+          <button
+            type="button"
+            :class="{ 'is-active': listViewMode === 'card' }"
+            :aria-pressed="listViewMode === 'card'"
+            @click="listViewMode = 'card'"
+          >
+            ▦ 카드형
+          </button>
+          <button
+            type="button"
+            :class="{ 'is-active': listViewMode === 'list' }"
+            :aria-pressed="listViewMode === 'list'"
+            @click="listViewMode = 'list'"
+          >
+            ☰ 목록형
+          </button>
+        </div>
+        <div class="map-search-field">
+          <label class="sr-only" for="map-place-search">장소 이름, 주소 또는 지역 검색</label>
+          <input
+            id="map-place-search"
+            v-model="searchQuery"
+            class="text-input"
+            type="search"
+            placeholder="장소 이름, 주소, 지역 검색"
+          />
+          <button
+            v-if="searchQuery"
+            type="button"
+            class="button button-ghost"
+            @click="searchQuery = ''"
+          >
+            초기화
+          </button>
+        </div>
       </div>
     </section>
 
-    <div v-if="filteredMapItems.length" class="info-grid">
+    <div
+      v-if="filteredMapItems.length"
+      class="map-place-results"
+      :class="listViewMode === 'card' ? 'info-grid' : 'map-place-list'"
+    >
       <article
         v-for="item in filteredMapItems"
         :key="item.id"
