@@ -168,6 +168,16 @@ export function getFestivalItemsForMonth(date = new Date()) {
   )
 }
 
+export function getFestivalItemsForDate(date = new Date()) {
+  const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+    date.getDate()
+  ).padStart(2, '0')}`
+
+  return getFestivalItems().filter(
+    (festival) => festival.startDate <= dateKey && festival.endDate >= dateKey
+  )
+}
+
 export function getContentTypeOptions() {
   return CONTENT_TYPE_DATASETS.map(({ code, name, color }) => ({ code, name, color }))
 }
