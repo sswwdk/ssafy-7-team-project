@@ -614,8 +614,20 @@ p {
 }
 
 .kakao-map-info-window {
+  box-sizing: border-box;
+  width: 220px;
+  max-width: calc(100vw - 48px);
   padding: 12px 16px;
-  min-width: 180px;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.kakao-map-info-window p {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .kakao-map-info-window strong {

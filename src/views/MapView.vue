@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, onMounted, watch } from 'vue'
+import { computed, nextTick, ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import EmptyState from '@/components/common/EmptyState.vue'
 import { getContentTypeOptions, getDistrictOptions, getMapItems } from '@/services/regionDataService'
@@ -148,7 +148,16 @@ function focusRequestedPlace() {
 
   if (item && markerState) {
     openInfoWindow(item, markerState.marker, markerState.infowindow)
+    return true
   }
+
+  return false
+}
+
+function centerMapInViewport() {
+  window.requestAnimationFrame(() => {
+    mapSection.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  })
 }
 
 function toggleDistrict(code) {
@@ -222,7 +231,7 @@ function renderMap() {
 
     const infowindow = new kakaoMapsApi.maps.InfoWindow({
       content: `
-        <div class="kakao-map-info-window" style="max-width: 220px; font-size: 13px; line-height: 1.4;">
+        <div class="kakao-map-info-window" style="font-size: 13px; line-height: 1.4;">
           ${item.imageUrl ? `<img src="${item.imageUrl}" alt="${item.name}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 6px; margin-bottom: 8px;" />` : ''}
           <strong style="display:block; margin-bottom: 4px;">${item.name}</strong>
           <p style="margin: 0; color: #4b5563;">${item.address}</p>
@@ -242,7 +251,6 @@ function renderMap() {
 
   mapInstance.setCenter(targetCenter)
   mapInstance.setLevel(7)
-  focusRequestedPlace()
 }
 
 function handleCardClick(item) {
@@ -301,6 +309,9 @@ onMounted(async () => {
       })
 
       renderMap()
+      if (focusRequestedPlace()) {
+        centerMapInViewport()
+      }
     })
   } catch (error) {
     mapError.value = error?.message || '지도 로드에 실패했습니다.'
@@ -313,9 +324,13 @@ watch([selectedDistrictCodes, selectedCategoryCodes, isAllCategoriesSelected], (
 
 watch(
   () => route.query.place,
-  () => {
+  async () => {
     applyRequestedPlaceFilter()
+    await nextTick()
     renderMap()
+    if (focusRequestedPlace()) {
+      centerMapInViewport()
+    }
   }
 )
 </script>
