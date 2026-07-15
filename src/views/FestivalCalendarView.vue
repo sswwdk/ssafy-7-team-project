@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import { getFestivalItems } from '@/services/regionDataService'
+import { getSeoulWeather } from '@/services/weatherService'
 import { formatDate } from '@/utils/date'
 
 const festivals = getFestivalItems()
@@ -9,7 +10,11 @@ const now = ref(new Date())
 const currentMonth = ref(new Date(now.value.getFullYear(), now.value.getMonth(), 1))
 const selectedDateKey = ref(formatDateKey(now.value))
 const selectedStatus = ref('month')
+const weather = ref(null)
+const weatherError = ref('')
+const isWeatherLoading = ref(false)
 const weekDays = Object.freeze(['일', '월', '화', '수', '목', '금', '토'])
+const weatherController = new AbortController()
 let clockTimer = null
 
 function formatDateKey(date) {
@@ -92,6 +97,29 @@ function goToToday() {
   now.value = today
   currentMonth.value = new Date(today.getFullYear(), today.getMonth(), 1)
   selectedDateKey.value = formatDateKey(today)
+}
+
+async function loadWeather() {
+  if (isWeatherLoading.value) return
+
+  isWeatherLoading.value = true
+  weatherError.value = ''
+
+  try {
+    weather.value = await getSeoulWeather({ signal: weatherController.signal })
+  } catch (error) {
+    if (error.name !== 'AbortError') {
+      weatherError.value = '날씨 정보 없음'
+    }
+  } finally {
+    isWeatherLoading.value = false
+  }
+}
+
+function refreshWeatherWhenVisible() {
+  if (document.visibilityState === 'visible') {
+    loadWeather()
+  }
 }
 
 const currentTimeLabel = computed(() =>
@@ -200,13 +228,17 @@ const festivalStatusSummary = computed(() =>
 )
 
 onMounted(() => {
+  loadWeather()
+  document.addEventListener('visibilitychange', refreshWeatherWhenVisible)
   clockTimer = window.setInterval(() => {
     now.value = new Date()
   }, 30_000)
 })
 
 onUnmounted(() => {
+  document.removeEventListener('visibilitychange', refreshWeatherWhenVisible)
   window.clearInterval(clockTimer)
+  weatherController.abort()
 })
 </script>
 
@@ -218,11 +250,26 @@ onUnmounted(() => {
         <h1>서울 축제 일정</h1>
         <p class="help-text">현재 날짜를 기준으로 진행 중인 축제와 예정 일정을 확인하세요.</p>
       </div>
-      <div class="festival-live-time" aria-live="polite">
-        <span aria-hidden="true"></span>
-        <div>
-          <small>현재 시각</small>
-          <strong>{{ currentTimeLabel }}</strong>
+      <div class="festival-heading-widgets">
+        <div class="festival-weather-brief" aria-live="polite">
+          <span v-if="weather" class="festival-weather-icon" aria-hidden="true">
+            {{ weather.icon }}
+          </span>
+          <div v-if="weather">
+            <small>서울 날씨</small>
+            <strong>{{ weather.temperature }}° · {{ weather.label }}</strong>
+          </div>
+          <span v-else-if="isWeatherLoading">날씨 불러오는 중</span>
+          <button v-else type="button" @click="loadWeather">
+            {{ weatherError || '날씨 다시 불러오기' }}
+          </button>
+        </div>
+        <div class="festival-live-time" aria-live="polite">
+          <span aria-hidden="true"></span>
+          <div>
+            <small>현재 시각</small>
+            <strong>{{ currentTimeLabel }}</strong>
+          </div>
         </div>
       </div>
     </div>

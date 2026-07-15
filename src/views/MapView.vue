@@ -10,14 +10,19 @@ const mapError = ref('')
 const route = useRoute()
 const apiKey = import.meta.env.VITE_KAKAO_MAP_API_KEY?.trim()
 const selectedDistrictCodes = ref([])
-const selectedCategoryCode = ref('12')
+const selectedCategoryCodes = ref([])
+const isAllCategoriesSelected = ref(false)
 const searchQuery = ref('')
 const listViewMode = ref('card')
 const districtOptions = getDistrictOptions()
 const contentTypeOptions = getContentTypeOptions()
-const mapItems = computed(() =>
-  getMapItems(selectedDistrictCodes.value.join(','), selectedCategoryCode.value)
-)
+const mapItems = computed(() => {
+  if (!isAllCategoriesSelected.value && !selectedCategoryCodes.value.length) {
+    return []
+  }
+
+  return getMapItems(selectedDistrictCodes.value.join(','), selectedCategoryCodes.value.join(','))
+})
 const filteredMapItems = computed(() => {
   const keyword = searchQuery.value.trim().toLowerCase()
 
@@ -158,6 +163,22 @@ function toggleDistrict(code) {
   }
 }
 
+function toggleCategory(code) {
+  if (!code) {
+    selectedCategoryCodes.value = []
+    isAllCategoriesSelected.value = !isAllCategoriesSelected.value
+    return
+  }
+
+  isAllCategoriesSelected.value = false
+
+  if (selectedCategoryCodes.value.includes(code)) {
+    selectedCategoryCodes.value = selectedCategoryCodes.value.filter((item) => item !== code)
+  } else {
+    selectedCategoryCodes.value = [...selectedCategoryCodes.value, code]
+  }
+}
+
 function getTargetCenter() {
   if (!kakaoMapsApi) {
     return null
@@ -285,7 +306,7 @@ onMounted(async () => {
   }
 })
 
-watch([selectedDistrictCodes, selectedCategoryCode], () => {
+watch([selectedDistrictCodes, selectedCategoryCodes, isAllCategoriesSelected], () => {
   renderMap()
 }, { deep: true })
 
@@ -303,9 +324,6 @@ watch(
     <div>
       <p class="eyebrow">Map View</p>
       <h1>서울 지역 지도</h1>
-      <p class="help-text">
-        아래 지도는 .env에 설정된 Kakao Map API 키를 사용해 로드됩니다.
-      </p>
     </div>
 
     <div class="map-region-filter" aria-label="지역 선택 필터">
@@ -340,9 +358,9 @@ watch(
         <button
           type="button"
           class="map-category-button"
-          :class="{ 'is-active': !selectedCategoryCode }"
-          :aria-pressed="!selectedCategoryCode"
-          @click="selectedCategoryCode = ''"
+          :class="{ 'is-active': isAllCategoriesSelected }"
+          :aria-pressed="isAllCategoriesSelected"
+          @click="toggleCategory('')"
         >
           <span class="map-category-all-icon" aria-hidden="true"></span>
           전체
@@ -352,9 +370,9 @@ watch(
           :key="contentType.code"
           type="button"
           class="map-category-button"
-          :class="{ 'is-active': selectedCategoryCode === contentType.code }"
-          :aria-pressed="selectedCategoryCode === contentType.code"
-          @click="selectedCategoryCode = contentType.code"
+          :class="{ 'is-active': selectedCategoryCodes.includes(contentType.code) }"
+          :aria-pressed="selectedCategoryCodes.includes(contentType.code)"
+          @click="toggleCategory(contentType.code)"
         >
           <span
             class="map-category-color"
@@ -447,6 +465,11 @@ watch(
         </button>
       </article>
     </div>
+    <EmptyState
+      v-else-if="!isAllCategoriesSelected && !selectedCategoryCodes.length"
+      title="장소 종류를 선택해 주세요."
+      description="전체 또는 원하는 장소 종류를 선택하면 지도와 목록에 표시됩니다."
+    />
     <EmptyState
       v-else-if="searchQuery"
       title="검색 결과가 없습니다."
