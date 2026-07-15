@@ -16,13 +16,41 @@ const inputMessage = ref('')
 const messageList = ref(null)
 
 watch(
-  () => [props.isOpen, messages.value.length],
-  async () => {
+  () => props.isOpen,
+  async (isOpen) => {
+    if (!isOpen) return
+
     await nextTick()
 
     if (messageList.value) {
       messageList.value.scrollTop = messageList.value.scrollHeight
     }
+  }
+)
+
+watch(
+  () => messages.value.length,
+  async () => {
+    await nextTick()
+
+    const list = messageList.value
+    const latestMessage = messages.value.at(-1)
+
+    if (!list || !latestMessage) return
+
+    if (latestMessage.role === 'assistant') {
+      const rows = list.querySelectorAll('.chat-row')
+      const latestRow = rows.item(rows.length - 1)
+
+      if (latestRow) {
+        const listTop = list.getBoundingClientRect().top
+        const rowTop = latestRow.getBoundingClientRect().top
+        list.scrollTop += rowTop - listTop - 8
+      }
+      return
+    }
+
+    list.scrollTop = list.scrollHeight
   }
 )
 

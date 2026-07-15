@@ -10,7 +10,7 @@ const props = defineProps({
 })
 
 const messageParts = computed(() => {
-  const pattern = /\[\[map:([^|\]]+)\|([^\]]+)\]\]/g
+  const pattern = /\[\[map:([^|\]\r\n]+)\|([^\r\n]*?)\]\]/g
   const parts = []
   let lastIndex = 0
   let match
