@@ -1,9 +1,4 @@
-import {
-  CHATBOT_TIMEOUT_MS,
-  OPENAI_API_URL,
-  OPENAI_MAX_OUTPUT_TOKENS,
-  OPENAI_MODEL
-} from '@/constants/chatbot'
+import { CHATBOT_TIMEOUT_MS } from '@/constants/chatbot'
 
 function extractOutputText(data) {
   if (typeof data.output_text === 'string' && data.output_text.trim()) {
@@ -73,28 +68,17 @@ export async function requestChatbotAnswer({
   tourismContext,
   currentDate
 }) {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY?.trim()
-
-  if (!apiKey) {
-    throw new Error('VITE_OPENAI_API_KEY가 설정되지 않았습니다.')
-  }
-
   const controller = new AbortController()
   const timeoutId = window.setTimeout(() => controller.abort(), CHATBOT_TIMEOUT_MS)
 
   try {
-    const response = await fetch(OPENAI_API_URL, {
+    const response = await fetch('/.netlify/functions/chat', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`
+        'Content-Type': 'application/json'
       },
       signal: controller.signal,
       body: JSON.stringify({
-        model: OPENAI_MODEL,
-        reasoning: {
-          effort: 'minimal'
-        },
         instructions: [
           '당신은 LocalHub 서울 지역정보 안내 챗봇입니다. 제공된 지역 JSON과 현재 브라우저의 커뮤니티 게시글만 근거로 한국어로 간결하게 답하세요. 근거가 부족하면 추측하지 말고 정보가 없다고 안내하세요. 비밀번호나 API 키를 요청하거나 출력하지 마세요. 답변에 Markdown 문법을 사용하지 마세요. 특히 ##, ###, *, -, 백틱을 제목이나 목록 표시에 사용하지 마세요. 축제·행사 월별 질문은 다음 일반 텍스트 형식을 따르세요: 첫 줄은 "안녕하세요! 오늘 기준(YYYY-MM-DD) ..."라는 안내 문장으로 시작합니다. 빈 줄 뒤 "축제/행사 목록"을 쓰고, 각 항목은 "1. 행사명", 다음 줄에 들여쓰기 3칸과 "기간: 시작일 ~ 종료일", 그다음 줄에 들여쓰기 3칸과 "장소: 주소"로 씁니다. 데이터에 주소가 없으면 장소 줄은 생략합니다. 빈 줄 뒤 관련 커뮤니티 게시글이 있을 때만 "커뮤니티 글"을 쓰고, 각 글은 "[제목]" 다음 줄에 "작성일: YYYY-MM-DD" 형식으로 씁니다. 관련 글이 없으면 커뮤니티 글 구역 자체를 쓰지 마세요. 마지막에는 "다른 서울 지역 정보도 궁금하시면 언제든지 물어보세요!"로 끝내세요. 연중 행사도 축제/행사 목록에 포함하되 기간을 그대로 표시하세요. 제공되지 않은 시간, 티켓, 프로그램 정보는 만들지 마세요.',
           '사용자가 커뮤니티 글 목록을 요청하면 제공된 communityPosts의 모든 글을 빠뜨리지 말고 안내하세요. 이때 "커뮤니티 글" 다음에 각 글을 "[제목]"과 다음 줄 "작성일: YYYY-MM-DD" 형식으로 표시하세요. 글이 없을 때만 커뮤니티 게시글 정보가 없다고 안내하세요.',
@@ -115,7 +99,6 @@ ${formatContext({
   postMatches,
   tourismContext
 })}`,
-        max_output_tokens: OPENAI_MAX_OUTPUT_TOKENS
       })
     })
 
