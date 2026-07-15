@@ -2,7 +2,7 @@ import { ref } from 'vue'
 import { CHATBOT_POST_CONTEXT_LIMIT, CHATBOT_REGION_CONTEXT_LIMIT } from '@/constants/chatbot'
 import { getPosts } from '@/services/postStorageService'
 import { requestChatbotAnswer } from '@/services/openaiService'
-import { searchRegionData } from '@/services/regionDataService'
+import { getFestivalItemsForMonth, searchRegionData } from '@/services/regionDataService'
 
 const messages = ref([
   {
@@ -31,6 +31,50 @@ function searchCommunityPosts(query) {
     .slice(0, CHATBOT_POST_CONTEXT_LIMIT)
 }
 
+function getRequestedFestivalMonth(query, referenceDate = new Date()) {
+  if (!/축제|공연|행사/.test(query)) {
+    return null
+  }
+
+  const compactQuery = query.replace(/\s+/g, '')
+  const yearMonthMatch = compactQuery.match(/(\d{4})년(\d{1,2})월/)
+
+  if (yearMonthMatch) {
+    const year = Number(yearMonthMatch[1])
+    const month = Number(yearMonthMatch[2])
+
+    if (month >= 1 && month <= 12) {
+      return new Date(year, month - 1, 1)
+    }
+  }
+
+  if (/다음달|내달/.test(compactQuery)) {
+    return new Date(referenceDate.getFullYear(), referenceDate.getMonth() + 1, 1)
+  }
+
+  if (/이번달|이달|현재달/.test(compactQuery)) {
+    return new Date(referenceDate.getFullYear(), referenceDate.getMonth(), 1)
+  }
+
+  const monthMatch = compactQuery.match(/(1[0-2]|[1-9])월/)
+
+  if (monthMatch) {
+    return new Date(referenceDate.getFullYear(), Number(monthMatch[1]) - 1, 1)
+  }
+
+  return null
+}
+
+function searchChatbotRegionData(query) {
+  const requestedFestivalMonth = getRequestedFestivalMonth(query)
+
+  if (requestedFestivalMonth) {
+    return getFestivalItemsForMonth(requestedFestivalMonth)
+  }
+
+  return searchRegionData(query, CHATBOT_REGION_CONTEXT_LIMIT)
+}
+
 export function useChatbot() {
   async function sendMessage(rawMessage) {
     const question = rawMessage.trim()
@@ -50,8 +94,9 @@ export function useChatbot() {
     try {
       const answer = await requestChatbotAnswer({
         question,
-        regionMatches: searchRegionData(question, CHATBOT_REGION_CONTEXT_LIMIT),
-        postMatches: searchCommunityPosts(question)
+        regionMatches: searchChatbotRegionData(question),
+        postMatches: searchCommunityPosts(question),
+        currentDate: new Date()
       })
 
       messages.value.push({
