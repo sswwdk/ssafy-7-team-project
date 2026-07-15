@@ -155,7 +155,21 @@ export function getFestivalItems() {
     .sort((left, right) => new Date(left.startDate) - new Date(right.startDate))
 }
 
-export function getFestivalItemsForMonth(date = new Date()) {
+function matchesDistrict(item, districtName) {
+  return (
+    !districtName ||
+    item.districtName === districtName ||
+    item.address.includes(districtName)
+  )
+}
+
+export function getTourismItems(districtName = '') {
+  return getRegionItems().filter(
+    (item) => item.categoryCode === '12' && matchesDistrict(item, districtName)
+  )
+}
+
+export function getFestivalItemsForMonth(date = new Date(), districtName = '') {
   const year = date.getFullYear()
   const month = date.getMonth()
   const monthStart = `${year}-${String(month + 1).padStart(2, '0')}-01`
@@ -163,9 +177,9 @@ export function getFestivalItemsForMonth(date = new Date()) {
     new Date(year, month + 1, 0).getDate()
   ).padStart(2, '0')}`
 
-  return getFestivalItems().filter(
-    (festival) => festival.startDate <= monthEnd && festival.endDate >= monthStart
-  )
+  return getFestivalItems()
+    .filter((festival) => festival.startDate <= monthEnd && festival.endDate >= monthStart)
+    .filter((festival) => matchesDistrict(festival, districtName))
 }
 
 export function getContentTypeOptions() {

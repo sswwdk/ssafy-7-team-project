@@ -1,11 +1,13 @@
 <script setup>
 import { computed, ref, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import EmptyState from '@/components/common/EmptyState.vue'
 import { getContentTypeOptions, getDistrictOptions, getMapItems } from '@/services/regionDataService'
 
 const mapContainer = ref(null)
 const mapSection = ref(null)
 const mapError = ref('')
+const route = useRoute()
 const apiKey = import.meta.env.VITE_KAKAO_MAP_API_KEY?.trim()
 const selectedDistrictCodes = ref([])
 const selectedCategoryCode = ref('12')
@@ -113,6 +115,36 @@ function openInfoWindow(item, marker, infowindow) {
   activeInfoWindow = infowindow
 }
 
+function getRequestedMapItem() {
+  const placeId = String(route.query.place || '')
+
+  if (!placeId) {
+    return null
+  }
+
+  return getMapItems('', '').find((item) => item.id === placeId) || null
+}
+
+function applyRequestedPlaceFilter() {
+  const item = getRequestedMapItem()
+
+  if (!item) {
+    return
+  }
+
+  selectedCategoryCode.value = item.categoryCode
+  selectedDistrictCodes.value = item.districtCode ? [item.districtCode] : []
+}
+
+function focusRequestedPlace() {
+  const item = getRequestedMapItem()
+  const markerState = item ? markerStates[item.id] : null
+
+  if (item && markerState) {
+    openInfoWindow(item, markerState.marker, markerState.infowindow)
+  }
+}
+
 function toggleDistrict(code) {
   if (!code) {
     selectedDistrictCodes.value = []
@@ -188,6 +220,7 @@ function renderMap() {
 
   mapInstance.setCenter(targetCenter)
   mapInstance.setLevel(7)
+  focusRequestedPlace()
 }
 
 function handleCardClick(item) {
@@ -231,6 +264,7 @@ onMounted(async () => {
   }
 
   try {
+    applyRequestedPlaceFilter()
     kakaoMapsApi = await loadKakaoScript()
     kakaoMapsApi.maps.load(() => {
       if (!mapContainer.value) {
@@ -254,6 +288,14 @@ onMounted(async () => {
 watch([selectedDistrictCodes, selectedCategoryCode], () => {
   renderMap()
 }, { deep: true })
+
+watch(
+  () => route.query.place,
+  () => {
+    applyRequestedPlaceFilter()
+    renderMap()
+  }
+)
 </script>
 
 <template>
