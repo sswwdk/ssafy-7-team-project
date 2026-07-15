@@ -108,7 +108,7 @@ p {
 .detail-card,
 .form-card,
 .state-box,
-.map-placeholder {
+.map-container {
   border: 1px solid var(--line);
   border-radius: 20px;
   background: var(--surface);
@@ -408,21 +408,164 @@ p {
   margin: 8px 0;
 }
 
-.map-placeholder {
+.map-container {
+  position: relative;
+  min-height: 420px;
+  overflow: hidden;
+  scroll-margin-top: 88px;
+}
+
+.map-region-filter,
+.map-category-filter {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f0fdf4, #ecfdf5);
+  box-shadow: 0 1px 3px rgb(16 185 129 / 10%);
+}
+
+.map-region-buttons,
+.map-category-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.map-region-button,
+.map-category-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 7px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  color: #111827;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.map-category-button {
+  justify-content: flex-start;
+}
+
+.map-region-button:hover,
+.map-category-button:hover,
+.map-category-button.is-active {
+  border-color: var(--primary);
+  background: #ecfdf5;
+  box-shadow: 0 0 0 2px rgb(15 118 110 / 12%);
+}
+
+.map-category-color {
+  width: 12px;
+  height: 12px;
+  border: 1px solid rgb(15 23 42 / 20%);
+  border-radius: 50%;
+}
+
+.map-category-all-icon {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: conic-gradient(#facc15, #ec4899, #8b5cf6, #3b82f6, #22c55e, #facc15);
+}
+
+.map-container .map-renderer {
+  width: 100%;
+  min-height: 420px;
+}
+
+.map-error {
+  position: absolute;
+  inset: 0;
   display: grid;
   place-items: center;
-  min-height: 360px;
   padding: 24px;
   text-align: center;
-  background-image:
-    linear-gradient(#e2e8f0 1px, transparent 1px),
-    linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
-  background-size: 28px 28px;
+  color: var(--danger);
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.kakao-map-info-window {
+  padding: 12px 16px;
+  min-width: 180px;
+}
+
+.kakao-map-info-window strong {
+  display: block;
+  margin-bottom: 6px;
 }
 
 .info-card,
 .timeline-card {
   padding: 20px;
+}
+
+.category-themed-card {
+  border-color: var(--category-color);
+  box-shadow:
+    inset 0 4px 0 var(--category-color),
+    0 6px 18px color-mix(in srgb, var(--category-color) 12%, transparent);
+}
+
+.category-themed-card .badge {
+  color: var(--category-stroke-color);
+  border: 1px solid color-mix(in srgb, var(--category-color) 65%, #fff);
+  background: color-mix(in srgb, var(--category-color) 18%, #fff);
+}
+
+.category-themed-card .map-marker-button {
+  color: var(--category-stroke-color);
+  border-color: var(--category-color);
+  background: color-mix(in srgb, var(--category-color) 16%, #fff);
+}
+
+.category-themed-card .map-marker-button:hover {
+  background: color-mix(in srgb, var(--category-color) 28%, #fff);
+}
+
+.map-marker-button {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.map-list-toolbar {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.map-list-toolbar p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.map-search-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(520px, 100%);
+}
+
+.map-search-field .text-input {
+  flex: 1;
+}
+
+.map-search-field .button {
+  flex: none;
 }
 
 .info-card h2,
@@ -434,6 +577,300 @@ p {
 .timeline-card time {
   color: var(--primary);
   font-weight: 800;
+}
+
+.festival-page-heading,
+.festival-calendar-header,
+.festival-calendar-navigation,
+.festival-live-time,
+.festival-event-meta {
+  display: flex;
+  align-items: center;
+}
+
+.festival-page-heading,
+.festival-calendar-header {
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.festival-page-heading h1 {
+  margin-bottom: 10px;
+}
+
+.festival-live-time {
+  gap: 10px;
+  min-width: 280px;
+  padding: 14px 16px;
+  border: 1px solid #a7f3d0;
+  border-radius: 14px;
+  background: #ecfdf5;
+}
+
+.festival-live-time > span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 5px rgb(16 185 129 / 14%);
+}
+
+.festival-live-time div {
+  display: grid;
+  gap: 3px;
+}
+
+.festival-live-time small {
+  color: var(--muted);
+}
+
+.festival-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.festival-summary-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.festival-summary-card span {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.festival-summary-card strong {
+  color: var(--primary-dark);
+  font-size: 2rem;
+}
+
+.festival-summary-card.status-ongoing {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.festival-summary-card.status-upcoming {
+  border-color: #f9a8d4;
+  background: #fdf2f8;
+}
+
+.festival-calendar-card {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: 0 10px 30px rgb(15 23 42 / 5%);
+}
+
+.festival-calendar-header {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.festival-calendar-navigation {
+  gap: 12px;
+}
+
+.festival-calendar-navigation h2 {
+  min-width: 150px;
+  margin: 0;
+  text-align: center;
+}
+
+.festival-calendar-navigation .button {
+  min-width: 42px;
+  padding: 0;
+  font-size: 1.5rem;
+}
+
+.festival-calendar-scroll {
+  overflow-x: auto;
+}
+
+.festival-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(105px, 1fr));
+  min-width: 760px;
+}
+
+.festival-weekday {
+  padding: 10px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  color: #475467;
+  background: #f8fafc;
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.festival-weekday.sunday {
+  color: #dc2626;
+}
+
+.festival-weekday.saturday {
+  color: #2563eb;
+}
+
+.festival-calendar-day {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  flex-direction: column;
+  gap: 7px;
+  min-height: 128px;
+  padding: 9px;
+  overflow: hidden;
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  color: inherit;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+}
+
+.festival-calendar-day:hover {
+  background: #f0fdfa;
+}
+
+.festival-calendar-day.is-outside {
+  color: #98a2b3;
+  background: #f8fafc;
+}
+
+.festival-calendar-day.is-selected {
+  background: #ecfdf5;
+  box-shadow: inset 0 0 0 2px var(--primary);
+}
+
+.festival-day-number {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 50%;
+  font-weight: 800;
+}
+
+.festival-calendar-day.is-today .festival-day-number {
+  color: #fff;
+  background: var(--primary);
+}
+
+.festival-day-events {
+  display: grid;
+  gap: 4px;
+}
+
+.festival-day-event,
+.festival-day-more {
+  display: block;
+  overflow: hidden;
+  padding: 4px 6px;
+  border-radius: 5px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.festival-day-event.status-ongoing,
+.festival-status-badge.status-ongoing {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.festival-day-event.status-upcoming,
+.festival-status-badge.status-upcoming {
+  color: #9d174d;
+  background: #fce7f3;
+}
+
+.festival-day-event.status-ended,
+.festival-status-badge.status-ended {
+  color: #475467;
+  background: #f2f4f7;
+}
+
+.festival-day-more {
+  color: var(--muted);
+  background: transparent;
+}
+
+.festival-schedule-heading {
+  margin-bottom: 16px;
+}
+
+.festival-schedule-heading > strong {
+  color: var(--primary);
+}
+
+.festival-event-list {
+  display: grid;
+  gap: 14px;
+}
+
+.festival-event-card {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.festival-event-card > img {
+  width: 100%;
+  height: 100%;
+  min-height: 190px;
+  object-fit: cover;
+}
+
+.festival-event-content {
+  min-width: 0;
+  padding: 20px;
+}
+
+.festival-event-meta {
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.festival-status-badge {
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+.festival-event-content h3 {
+  margin: 12px 0 8px;
+  font-size: 1.15rem;
+}
+
+.festival-event-address {
+  margin-bottom: 8px;
+  color: #475467;
+}
+
+.festival-event-description {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.6;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
 .chatbot-floating-button {
@@ -600,13 +1037,51 @@ p {
 
   .metric-grid,
   .info-grid,
-  .filter-bar {
+  .filter-bar,
+  .festival-summary-grid {
     grid-template-columns: 1fr;
+  }
+
+  .festival-page-heading,
+  .festival-calendar-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .festival-live-time {
+    min-width: 0;
+  }
+
+  .festival-calendar-navigation {
+    justify-content: space-between;
+  }
+
+  .festival-calendar-header > .button {
+    width: 100%;
+  }
+
+  .festival-event-card {
+    grid-template-columns: 1fr;
+  }
+
+  .festival-event-card > img {
+    height: 210px;
+    min-height: 0;
   }
 
   .section-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .map-list-toolbar,
+  .map-search-field {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .map-search-field {
+    width: 100%;
   }
 
   .section-heading .button {
