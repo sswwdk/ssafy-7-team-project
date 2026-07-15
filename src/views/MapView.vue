@@ -9,13 +9,18 @@ const mapError = ref('')
 const apiKey = import.meta.env.VITE_KAKAO_MAP_API_KEY?.trim()
 const selectedDistrictCodes = ref([])
 const selectedCategoryCodes = ref([])
+const isAllCategoriesSelected = ref(false)
 const searchQuery = ref('')
 const listViewMode = ref('card')
 const districtOptions = getDistrictOptions()
 const contentTypeOptions = getContentTypeOptions()
-const mapItems = computed(() =>
-  getMapItems(selectedDistrictCodes.value.join(','), selectedCategoryCodes.value.join(','))
-)
+const mapItems = computed(() => {
+  if (!isAllCategoriesSelected.value && !selectedCategoryCodes.value.length) {
+    return []
+  }
+
+  return getMapItems(selectedDistrictCodes.value.join(','), selectedCategoryCodes.value.join(','))
+})
 const filteredMapItems = computed(() => {
   const keyword = searchQuery.value.trim().toLowerCase()
 
@@ -129,8 +134,11 @@ function toggleDistrict(code) {
 function toggleCategory(code) {
   if (!code) {
     selectedCategoryCodes.value = []
+    isAllCategoriesSelected.value = true
     return
   }
+
+  isAllCategoriesSelected.value = false
 
   if (selectedCategoryCodes.value.includes(code)) {
     selectedCategoryCodes.value = selectedCategoryCodes.value.filter((item) => item !== code)
@@ -264,7 +272,7 @@ onMounted(async () => {
   }
 })
 
-watch([selectedDistrictCodes, selectedCategoryCodes], () => {
+watch([selectedDistrictCodes, selectedCategoryCodes, isAllCategoriesSelected], () => {
   renderMap()
 }, { deep: true })
 </script>
@@ -308,9 +316,9 @@ watch([selectedDistrictCodes, selectedCategoryCodes], () => {
         <button
           type="button"
           class="map-category-button"
-          :class="{ 'is-active': !selectedCategoryCodes.length }"
-          :aria-pressed="!selectedCategoryCodes.length"
-          @click="selectedCategoryCodes = []"
+          :class="{ 'is-active': isAllCategoriesSelected }"
+          :aria-pressed="isAllCategoriesSelected"
+          @click="toggleCategory('')"
         >
           <span class="map-category-all-icon" aria-hidden="true"></span>
           전체
@@ -415,6 +423,11 @@ watch([selectedDistrictCodes, selectedCategoryCodes], () => {
         </button>
       </article>
     </div>
+    <EmptyState
+      v-else-if="!isAllCategoriesSelected && !selectedCategoryCodes.length"
+      title="장소 종류를 선택해 주세요."
+      description="전체 또는 원하는 장소 종류를 선택하면 지도와 목록에 표시됩니다."
+    />
     <EmptyState
       v-else-if="searchQuery"
       title="검색 결과가 없습니다."
