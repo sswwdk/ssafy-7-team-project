@@ -1,4 +1,5 @@
 export const POST_STORAGE_KEY = 'localhub.posts.v1'
+export const THEME_STORAGE_KEY = 'localhub.theme'
 
 export const POST_CATEGORY_OPTIONS = Object.freeze([
   { value: 'free', label: '자유' },

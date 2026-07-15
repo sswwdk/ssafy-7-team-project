@@ -553,6 +553,41 @@ p {
   font-size: 0.875rem;
 }
 
+.map-list-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  width: min(720px, 100%);
+}
+
+.map-view-toggle {
+  display: inline-flex;
+  flex: none;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.map-view-toggle button {
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 7px;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.map-view-toggle button.is-active {
+  color: #fff;
+  background: var(--primary);
+  box-shadow: 0 2px 6px rgb(15 118 110 / 22%);
+}
+
 .map-search-field {
   display: flex;
   align-items: center;
@@ -566,6 +601,29 @@ p {
 
 .map-search-field .button {
   flex: none;
+}
+
+.map-place-list {
+  display: grid;
+  gap: 10px;
+}
+
+.map-place-list .info-card {
+  display: grid;
+  grid-template-columns: 110px minmax(170px, 0.8fr) minmax(240px, 1.5fr) 140px;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+}
+
+.map-place-list .info-card h2,
+.map-place-list .info-card p,
+.map-place-list .map-marker-button {
+  margin: 0;
+}
+
+.map-place-list .info-card h2 {
+  font-size: 0.98rem;
 }
 
 .info-card h2,
@@ -639,6 +697,20 @@ p {
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.festival-summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgb(15 23 42 / 9%);
+}
+
+.festival-summary-card.is-active {
+  box-shadow:
+    0 0 0 3px rgb(15 118 110 / 18%),
+    0 8px 20px rgb(15 23 42 / 8%);
 }
 
 .festival-summary-card span {
@@ -997,6 +1069,162 @@ p {
   resize: none;
 }
 
+.theme-toggle-button {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  color: #334155;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 10px 30px rgb(15 23 42 / 16%);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.theme-toggle-button:hover {
+  transform: translateY(-2px);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  color: #e5e7eb;
+  background: #0b1120;
+  --surface: #111827;
+  --line: #334155;
+  --muted: #94a3b8;
+  --primary: #2dd4bf;
+  --primary-dark: #5eead4;
+}
+
+:root[data-theme='dark'] body {
+  color: #e5e7eb;
+  background: #0b1120;
+}
+
+:root[data-theme='dark'] .app-header {
+  border-color: #334155;
+  background: rgb(15 23 42 / 94%);
+}
+
+:root[data-theme='dark'] .main-nav,
+:root[data-theme='dark'] .hero-card > p:not(.eyebrow),
+:root[data-theme='dark'] .post-card p,
+:root[data-theme='dark'] .festival-event-address,
+:root[data-theme='dark'] .festival-weekday {
+  color: #cbd5e1;
+}
+
+:root[data-theme='dark'] .hero-card {
+  background: linear-gradient(135deg, #0f2f2b, #111827 58%, #172554);
+}
+
+:root[data-theme='dark'] .button-secondary,
+:root[data-theme='dark'] .map-category-button.is-active,
+:root[data-theme='dark'] .map-category-button:hover,
+:root[data-theme='dark'] .map-region-button:hover {
+  color: #ccfbf1;
+  border-color: #0f766e;
+  background: #134e4a;
+}
+
+:root[data-theme='dark'] .button-ghost,
+:root[data-theme='dark'] .text-input,
+:root[data-theme='dark'] .chatbot-form textarea,
+:root[data-theme='dark'] .modal-card,
+:root[data-theme='dark'] .map-view-toggle,
+:root[data-theme='dark'] .map-region-button:not(.is-active),
+:root[data-theme='dark'] .map-category-button:not(.is-active) {
+  color: #e2e8f0 !important;
+  border-color: #475569 !important;
+  background: #1e293b !important;
+}
+
+:root[data-theme='dark'] .map-region-filter,
+:root[data-theme='dark'] .map-category-filter {
+  border-color: #285e55;
+  background: linear-gradient(90deg, #102a27, #132f2c);
+}
+
+:root[data-theme='dark'] .map-error {
+  background: rgb(15 23 42 / 90%);
+}
+
+:root[data-theme='dark'] .category-themed-card {
+  background: color-mix(in srgb, var(--category-color) 7%, #111827);
+}
+
+:root[data-theme='dark'] .category-themed-card .badge,
+:root[data-theme='dark'] .category-themed-card .map-marker-button {
+  color: color-mix(in srgb, var(--category-color) 55%, #fff);
+  background: color-mix(in srgb, var(--category-color) 16%, #111827);
+}
+
+:root[data-theme='dark'] .festival-live-time,
+:root[data-theme='dark'] .festival-summary-card.status-ongoing {
+  border-color: #166534;
+  background: #102a1c;
+}
+
+:root[data-theme='dark'] .festival-summary-card.status-upcoming {
+  border-color: #831843;
+  background: #321326;
+}
+
+:root[data-theme='dark'] .festival-weekday,
+:root[data-theme='dark'] .festival-calendar-day.is-outside,
+:root[data-theme='dark'] .chatbot-messages {
+  background: #0f172a;
+}
+
+:root[data-theme='dark'] .festival-calendar-day {
+  color: #e5e7eb;
+  background: #111827;
+}
+
+:root[data-theme='dark'] .festival-calendar-day:hover,
+:root[data-theme='dark'] .festival-calendar-day.is-selected {
+  background: #13332f;
+}
+
+:root[data-theme='dark'] .festival-day-event.status-ongoing,
+:root[data-theme='dark'] .festival-status-badge.status-ongoing {
+  color: #86efac;
+  background: #14532d;
+}
+
+:root[data-theme='dark'] .festival-day-event.status-upcoming,
+:root[data-theme='dark'] .festival-status-badge.status-upcoming {
+  color: #f9a8d4;
+  background: #831843;
+}
+
+:root[data-theme='dark'] .festival-day-event.status-ended,
+:root[data-theme='dark'] .festival-status-badge.status-ended {
+  color: #cbd5e1;
+  background: #334155;
+}
+
+:root[data-theme='dark'] .chatbot-panel,
+:root[data-theme='dark'] .chat-row-assistant .chat-message {
+  color: #e5e7eb;
+  background: #111827;
+}
+
+:root[data-theme='dark'] .theme-toggle-button {
+  color: #f8fafc;
+  border-color: #475569;
+  background: rgb(30 41 59 / 94%);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 35%);
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -1075,13 +1303,28 @@ p {
   }
 
   .map-list-toolbar,
+  .map-list-controls,
   .map-search-field {
     align-items: stretch;
     flex-direction: column;
   }
 
+  .map-list-controls {
+    width: 100%;
+  }
+
+  .map-view-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
   .map-search-field {
     width: 100%;
+  }
+
+  .map-place-list .info-card {
+    grid-template-columns: 1fr;
+    gap: 10px;
   }
 
   .section-heading .button {
@@ -1104,6 +1347,29 @@ p {
   .chatbot-floating-button {
     right: 16px;
     bottom: 16px;
+  }
+
+  .theme-toggle-button {
+    left: 16px;
+    bottom: 16px;
+    width: 48px;
+    padding: 0;
+    justify-content: center;
+    overflow: hidden;
+    color: transparent;
+    white-space: nowrap;
+  }
+
+  .theme-toggle-button span {
+    color: initial;
+  }
+
+  :root[data-theme='dark'] .theme-toggle-button {
+    color: transparent;
+  }
+
+  :root[data-theme='dark'] .theme-toggle-button span {
+    color: #fff;
   }
 }
 
