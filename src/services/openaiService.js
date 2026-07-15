@@ -50,7 +50,15 @@ function formatContext({ regionMatches, postMatches }) {
   )
 }
 
-export async function requestChatbotAnswer({ question, regionMatches, postMatches }) {
+function formatLocalDate(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+export async function requestChatbotAnswer({ question, regionMatches, postMatches, currentDate }) {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY?.trim()
 
   if (!apiKey) {
@@ -70,9 +78,15 @@ export async function requestChatbotAnswer({ question, regionMatches, postMatche
       signal: controller.signal,
       body: JSON.stringify({
         model: OPENAI_MODEL,
+        reasoning: {
+          effort: 'minimal'
+        },
         instructions:
           '당신은 LocalHub 서울 지역정보 안내 챗봇입니다. 제공된 지역 JSON과 현재 브라우저의 커뮤니티 게시글만 근거로 한국어로 간결하게 답하세요. 근거가 부족하면 추측하지 말고 정보가 없다고 안내하세요. 비밀번호나 API 키를 요청하거나 출력하지 마세요.',
-        input: `사용자 질문: ${question}
+        input: `Current local date: ${formatLocalDate(currentDate || new Date())}
+Use this date as the source of truth for questions about this month or next month. Do not ask the user to provide today's date.
+
+사용자 질문: ${question}
 
 검색된 컨텍스트:
 ${formatContext({

@@ -129,19 +129,43 @@ export function searchRegionData(query, limit = 8) {
   }
 
   const tokens = keyword.split(/\s+/).filter(Boolean)
-
-  return items
-    .filter((item) => {
+  const scoredItems = items
+    .map((item) => {
       const searchText = buildSearchText(item)
-      return tokens.every((token) => searchText.includes(token))
+      const matchedTokenCount = tokens.filter((token) => searchText.includes(token)).length
+
+      return { item, matchedTokenCount }
     })
+    .filter(({ matchedTokenCount }) => matchedTokenCount > 0)
+
+  const exactMatches = scoredItems.filter(
+    ({ matchedTokenCount }) => matchedTokenCount === tokens.length
+  )
+
+  // 질문에 조사나 자연어 표현이 붙어도 장소명·지역명처럼 일부 단어가 맞으면 전달한다.
+  return (exactMatches.length ? exactMatches : scoredItems)
+    .sort((left, right) => right.matchedTokenCount - left.matchedTokenCount)
     .slice(0, limit)
+    .map(({ item }) => item)
 }
 
 export function getFestivalItems() {
   return getRegionItems()
     .filter((item) => item.categoryCode === '15' && item.startDate && item.endDate)
     .sort((left, right) => new Date(left.startDate) - new Date(right.startDate))
+}
+
+export function getFestivalItemsForMonth(date = new Date()) {
+  const year = date.getFullYear()
+  const month = date.getMonth()
+  const monthStart = `${year}-${String(month + 1).padStart(2, '0')}-01`
+  const monthEnd = `${year}-${String(month + 1).padStart(2, '0')}-${String(
+    new Date(year, month + 1, 0).getDate()
+  ).padStart(2, '0')}`
+
+  return getFestivalItems().filter(
+    (festival) => festival.startDate <= monthEnd && festival.endDate >= monthStart
+  )
 }
 
 export function getContentTypeOptions() {
