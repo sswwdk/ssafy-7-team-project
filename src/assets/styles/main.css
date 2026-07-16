@@ -640,27 +640,47 @@ p {
   padding: 20px;
 }
 
-.category-themed-card {
-  border-color: var(--category-color);
-  box-shadow:
-    inset 0 4px 0 var(--category-color),
-    0 6px 18px color-mix(in srgb, var(--category-color) 12%, transparent);
-}
-
 .category-themed-card .badge {
   color: var(--category-stroke-color);
   border: 1px solid color-mix(in srgb, var(--category-color) 65%, #fff);
   background: color-mix(in srgb, var(--category-color) 18%, #fff);
 }
 
-.category-themed-card .map-marker-button {
-  color: var(--category-stroke-color);
-  border-color: var(--category-color);
-  background: color-mix(in srgb, var(--category-color) 16%, #fff);
+.place-card-image {
+  display: grid;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  margin-bottom: 16px;
+  border-radius: 10px;
+  background: #e2e8f0;
+  place-items: center;
 }
 
-.category-themed-card .map-marker-button:hover {
-  background: color-mix(in srgb, var(--category-color) 28%, #fff);
+.place-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.place-card-image span {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.place-card-title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.place-card-title h2 {
+  margin: 0;
+}
+
+.place-card-title .badge {
+  line-height: 1;
 }
 
 .map-marker-button {
@@ -742,7 +762,7 @@ p {
 
 .map-place-list .info-card {
   display: grid;
-  grid-template-columns: 110px minmax(170px, 0.8fr) minmax(240px, 1.5fr) 140px;
+  grid-template-columns: minmax(170px, 0.8fr) minmax(240px, 1.5fr) 140px;
   align-items: center;
   gap: 16px;
   padding: 14px 16px;
@@ -1356,12 +1376,7 @@ p {
   background: rgb(15 23 42 / 90%);
 }
 
-:root[data-theme='dark'] .category-themed-card {
-  background: color-mix(in srgb, var(--category-color) 7%, #111827);
-}
-
-:root[data-theme='dark'] .category-themed-card .badge,
-:root[data-theme='dark'] .category-themed-card .map-marker-button {
+:root[data-theme='dark'] .category-themed-card .badge {
   color: color-mix(in srgb, var(--category-color) 55%, #fff);
   background: color-mix(in srgb, var(--category-color) 16%, #111827);
 }
@@ -1571,6 +1586,11 @@ p {
   .chatbot-floating-button {
     right: 16px;
     bottom: 16px;
+  }
+
+  /* 전체 화면 챗봇에서는 하단 입력 영역과 겹치지 않도록 헤더의 닫기 버튼만 사용한다. */
+  .chatbot-panel + .chatbot-floating-button {
+    display: none;
   }
 
   .theme-toggle-button {
