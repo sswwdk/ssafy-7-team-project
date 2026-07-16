@@ -57,7 +57,7 @@ const copy = computed(() => locale.value === 'en'
       description: '지금 서울의 활동과 내 저장 목록을 한눈에 확인하세요.',
       weather: '서울 날씨',
       ongoing: '진행 중 축제',
-      thisWeek: '이번 주 시작',
+      thisWeek: '이번 주 시작하는 축제',
       favorites: '내 활동 요약',
       saved: '찜한 장소',
       savedFestivals: '찜한 축제',
@@ -242,7 +242,7 @@ onUnmounted(() => {
         <small>{{ locale === 'en' ? 'Within the next 7 days' : '앞으로 7일 안에 시작' }}</small>
       </RouterLink>
       <RouterLink class="dashboard-stat-card is-community" :to="{ name: ROUTE_NAMES.POSTS }">
-        <span>{{ locale === 'en' ? 'Community activity' : '커뮤니티 활동' }}</span>
+        <span>{{ locale === 'en' ? 'Community activity' : '커뮤니티 활동 (전체 댓글 수)' }}</span>
         <strong>{{ communityActivity.comments }}</strong>
         <small>{{ locale === 'en' ? `${communityActivity.posts} posts` : `게시글 ${communityActivity.posts}개` }}</small>
       </RouterLink>
