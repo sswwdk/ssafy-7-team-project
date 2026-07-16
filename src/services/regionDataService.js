@@ -72,7 +72,14 @@ function normalizeText(value) {
 
 function buildSearchText(item) {
   return normalizeText(
-    [item.name, item.category, item.address, item.description, item.tags?.join(' ')].join(' ')
+    [
+      item.name,
+      item.category,
+      item.districtName,
+      item.address,
+      item.description,
+      item.tags?.join(' ')
+    ].join(' ')
   )
 }
 
