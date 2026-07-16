@@ -2,11 +2,13 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import { useFavorites } from '@/composables/useFavorites'
+import { useLocale } from '@/composables/useLocale'
 import { getFestivalItems } from '@/services/regionDataService'
+import { localizeRegionItems } from '@/services/localizationService'
 import { getSeoulWeather } from '@/services/weatherService'
 import { formatDate } from '@/utils/date'
 
-const festivals = getFestivalItems()
+const rawFestivals = getFestivalItems()
 const now = ref(new Date())
 const currentMonth = ref(new Date(now.value.getFullYear(), now.value.getMonth(), 1))
 const selectedDateKey = ref(formatDateKey(now.value))
@@ -15,7 +17,11 @@ const weather = ref(null)
 const weatherError = ref('')
 const isWeatherLoading = ref(false)
 const { isFavorite, toggleFavorite } = useFavorites()
-const weekDays = Object.freeze(['일', '월', '화', '수', '목', '금', '토'])
+const { locale, t } = useLocale()
+const festivals = computed(() => localizeRegionItems(rawFestivals, locale.value))
+const weekDays = computed(() => locale.value === 'en'
+  ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  : ['일', '월', '화', '수', '목', '금', '토'])
 const weatherController = new AbortController()
 let clockTimer = null
 
@@ -41,11 +47,11 @@ function getFestivalStatus(festival) {
 }
 
 function getStatusLabel(status) {
-  return {
+  return t({
     ongoing: '진행 중',
     upcoming: '예정',
     ended: '종료',
-  }[status]
+  }[status])
 }
 
 function isFestivalOnDate(festival, dateKey) {
@@ -69,7 +75,7 @@ function setStatusFilter(status) {
   }
 
   if (status === 'upcoming') {
-    const nearestUpcomingFestival = festivals
+    const nearestUpcomingFestival = festivals.value
       .filter((festival) => getFestivalStatus(festival) === 'upcoming')
       .sort((left, right) => left.startDate.localeCompare(right.startDate))[0]
 
@@ -125,7 +131,7 @@ function refreshWeatherWhenVisible() {
 }
 
 const currentTimeLabel = computed(() =>
-  new Intl.DateTimeFormat('ko-KR', {
+  new Intl.DateTimeFormat(locale.value === 'en' ? 'en-US' : 'ko-KR', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -136,14 +142,14 @@ const currentTimeLabel = computed(() =>
 )
 
 const monthTitle = computed(() =>
-  new Intl.DateTimeFormat('ko-KR', {
+  new Intl.DateTimeFormat(locale.value === 'en' ? 'en-US' : 'ko-KR', {
     year: 'numeric',
     month: 'long',
   }).format(currentMonth.value)
 )
 
 const selectedDateLabel = computed(() =>
-  new Intl.DateTimeFormat('ko-KR', {
+  new Intl.DateTimeFormat(locale.value === 'en' ? 'en-US' : 'ko-KR', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -152,7 +158,9 @@ const selectedDateLabel = computed(() =>
 )
 
 const scheduleTitle = computed(() =>
-  selectedStatus.value === 'month' ? `${monthTitle.value} 전체 축제` : selectedDateLabel.value
+  selectedStatus.value === 'month'
+    ? (locale.value === 'en' ? `All Festivals in ${monthTitle.value}` : `${monthTitle.value} 전체 축제`)
+    : selectedDateLabel.value
 )
 
 const visibleFestivals = computed(() => {
@@ -162,16 +170,16 @@ const visibleFestivals = computed(() => {
     const monthStart = formatDateKey(new Date(year, month, 1))
     const monthEnd = formatDateKey(new Date(year, month + 1, 0))
 
-    return festivals.filter(
+    return festivals.value.filter(
       (festival) => festival.startDate <= monthEnd && festival.endDate >= monthStart
     )
   }
 
   if (selectedStatus.value === 'day') {
-    return festivals
+    return festivals.value
   }
 
-  return festivals.filter((festival) => getFestivalStatus(festival) === selectedStatus.value)
+  return festivals.value.filter((festival) => getFestivalStatus(festival) === selectedStatus.value)
 })
 
 const calendarDays = computed(() => {
@@ -214,13 +222,13 @@ const monthlyFestivalCount = computed(() => {
   const monthStart = formatDateKey(new Date(year, month, 1))
   const monthEnd = formatDateKey(new Date(year, month + 1, 0))
 
-  return festivals.filter(
+  return festivals.value.filter(
     (festival) => festival.startDate <= monthEnd && festival.endDate >= monthStart
   ).length
 })
 
 const festivalStatusSummary = computed(() =>
-  festivals.reduce(
+  festivals.value.reduce(
     (summary, festival) => {
       summary[getFestivalStatus(festival)] += 1
       return summary
@@ -249,8 +257,8 @@ onUnmounted(() => {
     <div class="festival-page-heading">
       <div>
         <p class="eyebrow">Festival Calendar</p>
-        <h1>서울 축제 일정</h1>
-        <p class="help-text">현재 날짜를 기준으로 진행 중인 축제와 예정 일정을 확인하세요.</p>
+        <h1>{{ t('서울 축제 일정') }}</h1>
+        <p class="help-text">{{ t('현재 날짜를 기준으로 진행 중인 축제와 예정 일정을 확인하세요.') }}</p>
       </div>
       <div class="festival-heading-widgets">
         <div class="festival-weather-brief" aria-live="polite">
@@ -258,25 +266,25 @@ onUnmounted(() => {
             {{ weather.icon }}
           </span>
           <div v-if="weather">
-            <small>서울 날씨</small>
-            <strong>{{ weather.temperature }}° · {{ weather.label }}</strong>
+            <small>{{ t('서울 날씨') }}</small>
+            <strong>{{ weather.temperature }}° · {{ t(weather.label) }}</strong>
           </div>
-          <span v-else-if="isWeatherLoading">날씨 불러오는 중</span>
+          <span v-else-if="isWeatherLoading">{{ t('날씨 불러오는 중') }}</span>
           <button v-else type="button" @click="loadWeather">
-            {{ weatherError || '날씨 다시 불러오기' }}
+            {{ weatherError ? t(weatherError) : t('날씨 다시 불러오기') }}
           </button>
         </div>
         <div class="festival-live-time" aria-live="polite">
           <span aria-hidden="true"></span>
           <div>
-            <small>현재 시각</small>
+            <small>{{ t('현재 시각') }}</small>
             <strong>{{ currentTimeLabel }}</strong>
           </div>
         </div>
       </div>
     </div>
 
-    <section class="festival-summary-grid" aria-label="축제 일정 현황">
+    <section class="festival-summary-grid" :aria-label="t('축제 일정 현황')">
       <button
         type="button"
         class="festival-summary-card status-ongoing"
@@ -284,7 +292,7 @@ onUnmounted(() => {
         :aria-pressed="selectedStatus === 'ongoing'"
         @click="setStatusFilter('ongoing')"
       >
-        <span>진행 중</span>
+        <span>{{ t('진행 중') }}</span>
         <strong>{{ festivalStatusSummary.ongoing }}</strong>
       </button>
       <button
@@ -294,7 +302,7 @@ onUnmounted(() => {
         :aria-pressed="selectedStatus === 'upcoming'"
         @click="setStatusFilter('upcoming')"
       >
-        <span>예정</span>
+        <span>{{ t('예정') }}</span>
         <strong>{{ festivalStatusSummary.upcoming }}</strong>
       </button>
       <button
@@ -304,7 +312,7 @@ onUnmounted(() => {
         :aria-pressed="selectedStatus === 'month'"
         @click="setStatusFilter('month')"
       >
-        <span>{{ monthTitle }} 전체</span>
+        <span>{{ locale === 'en' ? `All ${monthTitle}` : `${monthTitle} 전체` }}</span>
         <strong>{{ monthlyFestivalCount }}</strong>
       </button>
     </section>
@@ -312,15 +320,15 @@ onUnmounted(() => {
     <section class="festival-calendar-card">
       <div class="festival-calendar-header">
         <div class="festival-calendar-navigation">
-          <button type="button" class="button button-ghost" aria-label="이전 달" @click="changeMonth(-1)">
+          <button type="button" class="button button-ghost" :aria-label="t('이전 달')" @click="changeMonth(-1)">
             ‹
           </button>
           <h2>{{ monthTitle }}</h2>
-          <button type="button" class="button button-ghost" aria-label="다음 달" @click="changeMonth(1)">
+          <button type="button" class="button button-ghost" :aria-label="t('다음 달')" @click="changeMonth(1)">
             ›
           </button>
         </div>
-        <button type="button" class="button button-secondary" @click="goToToday">오늘</button>
+        <button type="button" class="button button-secondary" @click="goToToday">{{ t('오늘') }}</button>
       </div>
 
       <div class="festival-calendar-scroll">
@@ -344,7 +352,7 @@ onUnmounted(() => {
               'is-today': day.isToday,
               'is-selected': selectedDateKey === day.key,
             }"
-            :aria-label="`${day.key}, 축제 ${day.festivals.length}개`"
+            :aria-label="locale === 'en' ? `${day.key}, ${day.festivals.length} festivals` : `${day.key}, 축제 ${day.festivals.length}개`"
             @click="selectDate(day.key)"
           >
             <span class="festival-day-number">{{ day.day }}</span>
@@ -358,7 +366,7 @@ onUnmounted(() => {
                 {{ festival.name }}
               </span>
               <span v-if="day.festivals.length > 2" class="festival-day-more">
-                +{{ day.festivals.length - 2 }}개
+                +{{ day.festivals.length - 2 }}{{ locale === 'ko' ? '개' : '' }}
               </span>
             </span>
           </button>
@@ -372,7 +380,7 @@ onUnmounted(() => {
           <p class="eyebrow">Selected Date</p>
           <h2>{{ scheduleTitle }}</h2>
         </div>
-        <strong>{{ selectedFestivals.length }}개 일정</strong>
+        <strong>{{ selectedFestivals.length }} {{ t('일정') }}</strong>
       </div>
 
       <div v-if="selectedFestivals.length" class="festival-event-list">
@@ -388,7 +396,7 @@ onUnmounted(() => {
               </time>
             </div>
             <h3>{{ festival.name }}</h3>
-            <p class="festival-event-address">{{ festival.address || '주소 정보 없음' }}</p>
+            <p class="festival-event-address">{{ festival.address || t('주소 정보 없음') }}</p>
             <p v-if="festival.description" class="festival-event-description">
               {{ festival.description }}
             </p>
@@ -397,14 +405,14 @@ onUnmounted(() => {
               class="button favorite-button festival-favorite-button"
               :class="{ 'is-active': isFavorite(festival) }"
               :aria-pressed="isFavorite(festival)"
-              @click="toggleFavorite(festival)"
+              @click="toggleFavorite(rawFestivals.find((rawFestival) => rawFestival.id === festival.id) || festival)"
             >
-              {{ isFavorite(festival) ? '찜해제' : '찜하기' }}
+              {{ t(isFavorite(festival) ? '찜해제' : '찜하기') }}
             </button>
           </div>
         </article>
       </div>
-      <EmptyState v-else title="선택한 날짜에 진행되는 축제가 없습니다." />
+      <EmptyState v-else :title="t('선택한 날짜에 진행되는 축제가 없습니다.')" />
     </section>
   </div>
 </template>

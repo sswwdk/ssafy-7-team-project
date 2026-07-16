@@ -1,5 +1,6 @@
 export const POST_STORAGE_KEY = 'localhub.posts.v1'
 export const THEME_STORAGE_KEY = 'localhub.theme'
+export const LANGUAGE_STORAGE_KEY = 'localhub.language'
 export const FAVORITES_STORAGE_KEY = 'localhub.favorites.v1'
 
 export const POST_CATEGORY_OPTIONS = Object.freeze([

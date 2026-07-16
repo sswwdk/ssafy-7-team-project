@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useLocale } from '@/composables/useLocale'
 import { POST_CATEGORY_OPTIONS } from '@/constants/storage'
 import { getPostCommentCount } from '@/services/postStorageService'
 import { formatDateTime } from '@/utils/date'
@@ -10,6 +11,7 @@ const props = defineProps({
     required: true
   }
 })
+const { t } = useLocale()
 
 const categoryLabel = computed(
   () =>
@@ -22,7 +24,7 @@ const recommendationCount = computed(() => Number(props.post.recommendationCount
 <template>
   <article class="post-card">
     <div class="post-card-meta">
-      <span class="badge">{{ categoryLabel }}</span>
+      <span class="badge">{{ t(categoryLabel) }}</span>
       <time :datetime="post.createdAt">{{ formatDateTime(post.createdAt) }}</time>
     </div>
     <h2>

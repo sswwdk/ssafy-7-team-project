@@ -2159,7 +2159,8 @@ p {
 }
 
 .theme-toggle-button,
-.global-search-button {
+.global-search-button,
+.language-toggle-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2178,7 +2179,8 @@ p {
 }
 
 .theme-toggle-button:hover,
-.global-search-button:hover {
+.global-search-button:hover,
+.language-toggle-button:hover {
   border-color: var(--primary);
   background: #f0fdfa;
   transform: translateY(-1px);
@@ -2492,7 +2494,8 @@ p {
 }
 
 :root[data-theme='dark'] .theme-toggle-button,
-:root[data-theme='dark'] .global-search-button {
+:root[data-theme='dark'] .global-search-button,
+:root[data-theme='dark'] .language-toggle-button {
   color: #f8fafc;
   border-color: #475569;
   background: #1e293b;
@@ -2762,6 +2765,12 @@ p {
     width: 36px;
     min-height: 36px;
     padding: 0;
+  }
+
+  .language-toggle-button {
+    min-height: 36px;
+    padding: 0 10px;
+    font-size: 0.82rem;
   }
 
   .theme-toggle-label,

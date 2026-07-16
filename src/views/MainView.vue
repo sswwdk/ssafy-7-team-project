@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useLocale } from '@/composables/useLocale'
 import { ROUTE_NAMES } from '@/constants/routes'
 import {
   getContentTypeOptions,
@@ -9,9 +10,12 @@ import {
   getMapItems,
   searchRegionData
 } from '@/services/regionDataService'
+import { localizeRegionItem } from '@/services/localizationService'
 import { formatDate } from '@/utils/date'
 
 const router = useRouter()
+const { locale, t } = useLocale()
+const localized = (item) => localizeRegionItem(item, locale.value)
 const searchQuery = ref('')
 const mapItems = getMapItems('', '')
 const contentTypeOptions = getContentTypeOptions()
@@ -48,15 +52,18 @@ const heroSlides = heroSlideNames
   .filter(Boolean)
 const activeHeroSlideIndex = ref(0)
 const heroPlace = computed(
-  () => heroSlides[activeHeroSlideIndex.value] || featuredPlaces[0] || imageItems[0] || mapItems[0]
+  () => localized(heroSlides[activeHeroSlideIndex.value] || featuredPlaces[0] || imageItems[0] || mapItems[0])
 )
 const thisMonthFestivals = getFestivalItemsForMonth(new Date()).filter((item) => item.imageUrl)
 const festivalHighlights = (
   thisMonthFestivals.length ? thisMonthFestivals : getFestivalItems().filter((item) => item.imageUrl)
 ).slice(0, 4)
-const festivalSectionTitle = thisMonthFestivals.length
-  ? `${new Date().getMonth() + 1}월에 만나는 서울 축제`
-  : '서울에서 만나는 추천 축제'
+const festivalSectionTitle = computed(() => {
+  if (!thisMonthFestivals.length) return t('서울에서 만나는 추천 축제')
+
+  const month = new Date().getMonth() + 1
+  return locale.value === 'en' ? `Seoul festivals in ${month}` : `${month}월에 만나는 서울 축제`
+})
 
 const searchResults = computed(() => {
   if (!searchQuery.value.trim()) return []
@@ -64,6 +71,7 @@ const searchResults = computed(() => {
   return searchRegionData(searchQuery.value, 30)
     .filter((item) => Number.isFinite(item.latitude) && Number.isFinite(item.longitude))
     .slice(0, 6)
+    .map(localized)
 })
 let heroSlideTimer = null
 
@@ -114,21 +122,21 @@ onUnmounted(stopHeroSlider)
     <section class="landing-hero">
       <div class="landing-hero-content">
         <span class="landing-kicker">SEOUL LOCAL DISCOVERY</span>
-        <h1>오늘의 서울을<br />내 취향대로<br />발견하세요</h1>
-        <p>관광지부터 축제, 문화시설, 산책 코스까지 서울의 다채로운 장소를 한 번에 찾아보세요.</p>
+        <h1>{{ t('오늘의 서울을') }}<br />{{ t('내 취향대로') }}<br />{{ t('발견하세요') }}</h1>
+        <p>{{ t('관광지부터 축제, 문화시설, 산책 코스까지 서울의 다채로운 장소를 한 번에 찾아보세요.') }}</p>
 
         <div class="landing-search-wrap">
           <form class="landing-search" role="search" @submit.prevent="submitSearch">
             <span aria-hidden="true">⌕</span>
-            <label class="sr-only" for="landing-search-input">서울 장소 검색</label>
+            <label class="sr-only" for="landing-search-input">{{ t('서울 장소 검색') }}</label>
             <input
               id="landing-search-input"
               v-model="searchQuery"
               type="search"
               autocomplete="off"
-              placeholder="어디로 떠나고 싶으세요?"
+              :placeholder="t('어디로 떠나고 싶으세요?')"
             />
-            <button type="submit" :disabled="!searchResults.length">검색</button>
+            <button type="submit" :disabled="!searchResults.length">{{ t('검색') }}</button>
           </form>
 
           <ul v-if="searchQuery.trim()" class="landing-search-results">
@@ -139,21 +147,21 @@ onUnmounted(stopHeroSlider)
                 </span>
                 <span>
                   <strong>{{ item.name }}</strong>
-                  <small>{{ item.category }} · {{ item.districtName || '서울' }}</small>
+                  <small>{{ t(item.category) }} · {{ item.districtName || t('서울') }}</small>
                 </span>
               </RouterLink>
             </li>
             <li v-if="!searchResults.length" class="landing-search-empty">
-              일치하는 장소가 없습니다.
+              {{ t('일치하는 장소가 없습니다.') }}
             </li>
           </ul>
         </div>
 
         <div class="landing-keywords" aria-label="추천 검색어">
-          <span>추천</span>
-          <button type="button" @click="useKeyword('경복궁')">경복궁</button>
-          <button type="button" @click="useKeyword('한강')">한강</button>
-          <button type="button" @click="useKeyword('축제')">축제</button>
+          <span>{{ t('추천') }}</span>
+          <button type="button" @click="useKeyword(locale === 'en' ? 'Gyeongbokgung Palace' : '경복궁')">{{ locale === 'en' ? 'Gyeongbokgung Palace' : '경복궁' }}</button>
+          <button type="button" @click="useKeyword(locale === 'en' ? 'Han River' : '한강')">{{ locale === 'en' ? 'Han River' : '한강' }}</button>
+          <button type="button" @click="useKeyword(locale === 'en' ? 'Festivals' : '축제')">{{ t('축제') }}</button>
         </div>
       </div>
 
@@ -175,9 +183,9 @@ onUnmounted(stopHeroSlider)
               :alt="heroPlace.name"
             />
             <div class="landing-hero-caption">
-              <span>{{ heroPlace.category }} · {{ heroPlace.districtName || '서울' }}</span>
+              <span>{{ t(heroPlace.category) }} · {{ heroPlace.districtName || t('서울') }}</span>
               <strong>{{ heroPlace.name }}</strong>
-              <small>지도에서 확인하기 →</small>
+              <small>{{ t('지도에서 확인하기 →') }}</small>
             </div>
           </RouterLink>
         </Transition>
@@ -186,7 +194,7 @@ onUnmounted(stopHeroSlider)
           <button
             type="button"
             class="landing-slider-arrow is-previous"
-            aria-label="이전 추천 장소"
+            :aria-label="t('이전 추천 장소')"
             @click="changeHeroSlide(-1)"
           >
             <svg aria-hidden="true" viewBox="0 0 24 24">
@@ -196,20 +204,20 @@ onUnmounted(stopHeroSlider)
           <button
             type="button"
             class="landing-slider-arrow is-next"
-            aria-label="다음 추천 장소"
+            :aria-label="t('다음 추천 장소')"
             @click="changeHeroSlide(1)"
           >
             <svg aria-hidden="true" viewBox="0 0 24 24">
               <path d="m9 6 6 6-6 6" />
             </svg>
           </button>
-          <div class="landing-slider-dots" aria-label="추천 장소 선택">
+          <div class="landing-slider-dots" :aria-label="t('추천 장소 선택')">
             <button
               v-for="(slide, index) in heroSlides"
               :key="slide.id"
               type="button"
               :class="{ 'is-active': activeHeroSlideIndex === index }"
-              :aria-label="`${slide.name} 보기`"
+              :aria-label="locale === 'en' ? `View ${localized(slide).name}` : `${slide.name} 보기`"
               :aria-pressed="activeHeroSlideIndex === index"
               @click="selectHeroSlide(index)"
             ></button>
@@ -222,7 +230,7 @@ onUnmounted(stopHeroSlider)
       <div class="landing-section-heading">
         <div>
           <p class="eyebrow">Explore by category</p>
-          <h2 id="category-heading">어떤 서울을 찾고 있나요?</h2>
+          <h2 id="category-heading">{{ t('어떤 서울을 찾고 있나요?') }}</h2>
         </div>
       </div>
       <div class="landing-category-grid">
@@ -235,8 +243,8 @@ onUnmounted(stopHeroSlider)
           <span class="landing-category-icon" :style="{ backgroundColor: `${category.color}22` }">
             {{ category.icon }}
           </span>
-          <strong>{{ category.name }}</strong>
-          <small>{{ category.count }}곳</small>
+          <strong>{{ t(category.name) }}</strong>
+          <small>{{ locale === 'en' ? `${category.count} places` : `${category.count}곳` }}</small>
         </RouterLink>
       </div>
     </section>
@@ -245,9 +253,9 @@ onUnmounted(stopHeroSlider)
       <div class="landing-section-heading">
         <div>
           <p class="eyebrow">Local picks</p>
-          <h2 id="place-heading">서울에서 발견한 추천 장소</h2>
+          <h2 id="place-heading">{{ t('서울에서 발견한 추천 장소') }}</h2>
         </div>
-        <RouterLink :to="{ name: ROUTE_NAMES.MAP }">전체 장소 보기 →</RouterLink>
+        <RouterLink :to="{ name: ROUTE_NAMES.MAP }">{{ t('전체 장소 보기 →') }}</RouterLink>
       </div>
       <div class="landing-place-grid">
         <RouterLink
@@ -257,13 +265,13 @@ onUnmounted(stopHeroSlider)
           :to="{ name: ROUTE_NAMES.MAP, query: { place: place.id } }"
         >
           <div class="landing-place-image">
-            <img :src="place.imageUrl" :alt="place.name" loading="lazy" />
-            <span>{{ place.category }}</span>
+            <img :src="place.imageUrl" :alt="localized(place).name" loading="lazy" />
+            <span>{{ localized(place).category }}</span>
           </div>
           <div>
-            <small>{{ place.districtName || '서울' }}</small>
-            <strong>{{ place.name }}</strong>
-            <p>{{ place.address || '서울특별시' }}</p>
+            <small>{{ localized(place).districtName || t('서울') }}</small>
+            <strong>{{ localized(place).name }}</strong>
+            <p>{{ localized(place).address || (locale === 'en' ? 'Seoul' : '서울특별시') }}</p>
           </div>
         </RouterLink>
       </div>
@@ -275,7 +283,7 @@ onUnmounted(stopHeroSlider)
           <p class="eyebrow">Festival now</p>
           <h2 id="festival-heading">{{ festivalSectionTitle }}</h2>
         </div>
-        <RouterLink :to="{ name: ROUTE_NAMES.FESTIVALS }">축제 달력 보기 →</RouterLink>
+        <RouterLink :to="{ name: ROUTE_NAMES.FESTIVALS }">{{ t('축제 달력 보기 →') }}</RouterLink>
       </div>
       <div class="landing-festival-grid">
         <RouterLink
@@ -284,10 +292,10 @@ onUnmounted(stopHeroSlider)
           class="landing-festival-card"
           :to="{ name: ROUTE_NAMES.MAP, query: { place: festival.id } }"
         >
-          <img :src="festival.imageUrl" :alt="festival.name" loading="lazy" />
+          <img :src="festival.imageUrl" :alt="localized(festival).name" loading="lazy" />
           <div>
-            <span>{{ festival.districtName || '서울' }}</span>
-            <strong>{{ festival.name }}</strong>
+            <span>{{ localized(festival).districtName || t('서울') }}</span>
+            <strong>{{ localized(festival).name }}</strong>
             <small>{{ formatDate(festival.startDate) }} ~ {{ formatDate(festival.endDate) }}</small>
           </div>
         </RouterLink>
@@ -297,11 +305,11 @@ onUnmounted(stopHeroSlider)
     <section class="landing-community-cta">
       <div>
         <p class="eyebrow">Travel together</p>
-        <h2>서울 이야기를 함께 나눠보세요</h2>
-        <p>나만의 장소 추천과 축제 후기를 공유하고, 다른 여행자의 생생한 댓글을 확인해 보세요.</p>
+        <h2>{{ t('서울 이야기를 함께 나눠보세요') }}</h2>
+        <p>{{ t('나만의 장소 추천과 축제 후기를 공유하고, 다른 여행자의 생생한 댓글을 확인해 보세요.') }}</p>
       </div>
       <RouterLink class="button button-primary" :to="{ name: ROUTE_NAMES.POSTS }">
-        커뮤니티 둘러보기
+        {{ t('커뮤니티 둘러보기') }}
       </RouterLink>
     </section>
   </div>

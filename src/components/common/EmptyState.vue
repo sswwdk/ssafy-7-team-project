@@ -1,4 +1,7 @@
 <script setup>
+import { useLocale } from '@/composables/useLocale'
+
+const { t } = useLocale()
 defineProps({
   title: {
     type: String,
@@ -13,8 +16,8 @@ defineProps({
 
 <template>
   <section class="state-box" aria-live="polite">
-    <strong>{{ title }}</strong>
-    <p v-if="description">{{ description }}</p>
+    <strong>{{ t(title) }}</strong>
+    <p v-if="description">{{ t(description) }}</p>
     <slot />
   </section>
 </template>
