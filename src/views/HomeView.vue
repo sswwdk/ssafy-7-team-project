@@ -2,12 +2,14 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import PostCard from '@/components/community/PostCard.vue'
+import { useLocale } from '@/composables/useLocale'
 import { usePosts } from '@/composables/usePosts'
 import { SELECTED_REGION } from '@/constants/region'
 import { ROUTE_NAMES } from '@/constants/routes'
 import { getSeoulWeather } from '@/services/weatherService'
 
 const { posts, refreshPosts } = usePosts()
+const { t } = useLocale()
 const recentPosts = computed(() => posts.value.slice(0, 3))
 const weather = ref(null)
 const weatherError = ref('')
@@ -53,15 +55,15 @@ onUnmounted(() => {
   <div class="container page-stack">
     <section class="home-hero-grid">
       <div class="hero-card home-intro-card">
-        <p class="eyebrow">공공데이터 기반 지역정보 커뮤니티</p>
-        <h1>{{ SELECTED_REGION.name }} LocalHub</h1>
-        <p>{{ SELECTED_REGION.description }}</p>
+        <p class="eyebrow">{{ t('공공데이터 기반 지역정보 커뮤니티') }}</p>
+        <h1>{{ t(SELECTED_REGION.name) }} LocalHub</h1>
+        <p>{{ t(SELECTED_REGION.description) }}</p>
         <div class="button-row">
           <RouterLink class="button button-primary" :to="{ name: ROUTE_NAMES.POSTS }">
-            커뮤니티 보기
+            {{ t('커뮤니티 보기') }}
           </RouterLink>
           <RouterLink class="button button-secondary" :to="{ name: ROUTE_NAMES.MAP }">
-            지역정보 보기
+            {{ t('지역정보 보기') }}
           </RouterLink>
         </div>
       </div>
@@ -70,32 +72,32 @@ onUnmounted(() => {
         <div class="weather-card-heading">
           <div>
             <p class="eyebrow">Seoul Weather</p>
-            <h2>서울의 오늘 날씨</h2>
+            <h2>{{ t('서울의 오늘 날씨') }}</h2>
           </div>
           <span v-if="weather" class="weather-icon" aria-hidden="true">{{ weather.icon }}</span>
         </div>
 
-        <div v-if="isWeatherLoading" class="weather-state">날씨 정보를 불러오는 중입니다.</div>
+        <div v-if="isWeatherLoading" class="weather-state">{{ t('날씨 정보를 불러오는 중입니다.') }}</div>
         <div v-else-if="weatherError" class="weather-state weather-error">
           <p>{{ weatherError }}</p>
-          <button type="button" class="button button-ghost" @click="loadWeather">다시 시도</button>
+          <button type="button" class="button button-ghost" @click="loadWeather">{{ t('다시 시도') }}</button>
         </div>
         <template v-else-if="weather">
           <div class="weather-current">
             <strong>{{ weather.temperature }}°</strong>
             <div>
-              <b>{{ weather.label }}</b>
-              <span>체감 {{ weather.apparentTemperature }}°</span>
+              <b>{{ t(weather.label) }}</b>
+              <span>{{ t('체감') }} {{ weather.apparentTemperature }}°</span>
             </div>
           </div>
           <div class="weather-details">
-            <div><span>최고 / 최저</span><strong>{{ weather.maximumTemperature }}° / {{ weather.minimumTemperature }}°</strong></div>
-            <div><span>습도</span><strong>{{ weather.humidity }}%</strong></div>
-            <div><span>바람</span><strong>{{ weather.windSpeed }} km/h</strong></div>
-            <div><span>강수확률</span><strong>{{ weather.precipitationProbability }}%</strong></div>
+            <div><span>{{ t('최고 / 최저') }}</span><strong>{{ weather.maximumTemperature }}° / {{ weather.minimumTemperature }}°</strong></div>
+            <div><span>{{ t('습도') }}</span><strong>{{ weather.humidity }}%</strong></div>
+            <div><span>{{ t('바람') }}</span><strong>{{ weather.windSpeed }} km/h</strong></div>
+            <div><span>{{ t('강수확률') }}</span><strong>{{ weather.precipitationProbability }}%</strong></div>
           </div>
           <small class="weather-source">
-            {{ weather.observedAt.replace('T', ' ') }} 기준 ·
+            {{ weather.observedAt.replace('T', ' ') }} {{ t('기준') }} ·
             <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a>
           </small>
         </template>
@@ -106,9 +108,9 @@ onUnmounted(() => {
       <div class="section-heading">
         <div>
           <p class="eyebrow">Community</p>
-          <h2>최근 게시글</h2>
+          <h2>{{ t('최근 게시글') }}</h2>
         </div>
-        <RouterLink :to="{ name: ROUTE_NAMES.POSTS }">전체 보기</RouterLink>
+        <RouterLink :to="{ name: ROUTE_NAMES.POSTS }">{{ t('전체 보기') }}</RouterLink>
       </div>
 
       <div v-if="recentPosts.length" class="card-list">
@@ -116,8 +118,8 @@ onUnmounted(() => {
       </div>
       <EmptyState
         v-else
-        title="아직 게시글이 없습니다."
-        description="첫 번째 지역정보를 커뮤니티에 공유해 보세요."
+        :title="t('아직 게시글이 없습니다.')"
+        :description="t('첫 번째 지역정보를 커뮤니티에 공유해 보세요.')"
       />
     </section>
   </div>

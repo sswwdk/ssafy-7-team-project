@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import ConfirmModal from '@/components/common/ConfirmModal.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import { usePosts } from '@/composables/usePosts'
+import { useLocale } from '@/composables/useLocale'
 import { ROUTE_NAMES } from '@/constants/routes'
 import { POST_CATEGORY_OPTIONS } from '@/constants/storage'
 import {
@@ -27,6 +28,7 @@ const props = defineProps({
 
 const router = useRouter()
 const { findPost, removePost, toggleRecommendation } = usePosts()
+const { locale, t } = useLocale()
 const post = ref(null)
 const isDeleteModalOpen = ref(false)
 const deleteError = ref('')
@@ -268,13 +270,13 @@ function deleteSelectedReply(password) {
   <div class="container narrow-container page-stack">
     <article v-if="post" class="detail-card">
       <div class="post-card-meta">
-        <span class="badge">{{ categoryLabel }}</span>
-        <time :datetime="post.createdAt">작성 {{ formatDateTime(post.createdAt) }}</time>
+        <span class="badge">{{ t(categoryLabel) }}</span>
+        <time :datetime="post.createdAt">{{ t('작성') }} {{ formatDateTime(post.createdAt) }}</time>
       </div>
       <h1>{{ post.title }}</h1>
       <p class="post-content">{{ post.content }}</p>
       <p v-if="post.updatedAt !== post.createdAt" class="help-text">
-        최종 수정 {{ formatDateTime(post.updatedAt) }}
+        {{ t('최종 수정') }} {{ formatDateTime(post.updatedAt) }}
       </p>
       <div class="post-detail-footer">
         <button
@@ -285,13 +287,13 @@ function deleteSelectedReply(password) {
           @click="togglePostRecommendation"
         >
           <span aria-hidden="true">👍</span>
-          <span>추천</span>
+          <span>{{ t('게시글 추천') }}</span>
           <strong>{{ recommendationCount }}</strong>
         </button>
         <div class="button-row end">
-          <RouterLink class="button button-secondary" :to="`/posts/${post.id}/edit`">수정</RouterLink>
+          <RouterLink class="button button-secondary" :to="`/posts/${post.id}/edit`">{{ t('수정') }}</RouterLink>
           <button class="button button-danger" type="button" @click="isDeleteModalOpen = true">
-            삭제
+            {{ t('삭제') }}
           </button>
         </div>
       </div>
@@ -301,7 +303,7 @@ function deleteSelectedReply(password) {
       <div class="section-heading comment-heading">
         <div>
           <p class="eyebrow">Comments</p>
-          <h2 id="comment-heading">댓글 {{ totalCommentCount }}개</h2>
+          <h2 id="comment-heading">{{ t('댓글') }} {{ totalCommentCount }}{{ locale === 'ko' ? '개' : '' }}</h2>
         </div>
       </div>
 
@@ -311,19 +313,19 @@ function deleteSelectedReply(password) {
             <div class="comment-meta">
               <time :datetime="comment.createdAt">{{ formatDateTime(comment.createdAt) }}</time>
               <div class="comment-actions">
-                <button type="button" @click="startReplying(comment.id)">답글</button>
-                <button type="button" @click="startEditingComment(comment)">수정</button>
-                <button type="button" @click="openCommentDeleteModal(comment)">삭제</button>
+                <button type="button" @click="startReplying(comment.id)">{{ t('답글') }}</button>
+                <button type="button" @click="startEditingComment(comment)">{{ t('수정') }}</button>
+                <button type="button" @click="openCommentDeleteModal(comment)">{{ t('삭제') }}</button>
               </div>
             </div>
             <p class="comment-content">{{ comment.content }}</p>
             <small v-if="comment.updatedAt !== comment.createdAt" class="help-text">
-              수정 {{ formatDateTime(comment.updatedAt) }}
+              {{ t('수정') }} {{ formatDateTime(comment.updatedAt) }}
             </small>
           </template>
 
           <form v-else class="comment-edit-form" @submit.prevent="submitCommentEdit(comment.id)">
-            <label class="field-label" :for="`comment-edit-content-${comment.id}`">댓글 수정</label>
+            <label class="field-label" :for="`comment-edit-content-${comment.id}`">{{ t('댓글 수정') }}</label>
             <textarea
               :id="`comment-edit-content-${comment.id}`"
               v-model="editCommentForm.content"
@@ -332,9 +334,9 @@ function deleteSelectedReply(password) {
               rows="4"
             />
             <p v-if="editCommentErrors.content" class="error-text">
-              {{ editCommentErrors.content }}
+              {{ t(editCommentErrors.content) }}
             </p>
-            <label class="field-label" :for="`comment-edit-password-${comment.id}`">비밀번호</label>
+            <label class="field-label" :for="`comment-edit-password-${comment.id}`">{{ t('비밀번호') }}</label>
             <input
               :id="`comment-edit-password-${comment.id}`"
               v-model="editCommentForm.password"
@@ -342,17 +344,17 @@ function deleteSelectedReply(password) {
               type="password"
               autocomplete="current-password"
               maxlength="20"
-              placeholder="작성 시 비밀번호"
+              :placeholder="t('작성 시 비밀번호')"
             />
             <p v-if="editCommentErrors.password" class="error-text">
-              {{ editCommentErrors.password }}
+              {{ t(editCommentErrors.password) }}
             </p>
-            <p v-if="commentError" class="error-text">{{ commentError }}</p>
+            <p v-if="commentError" class="error-text">{{ t(commentError) }}</p>
             <div class="button-row end">
               <button class="button button-ghost" type="button" @click="cancelEditingComment">
-                취소
+                {{ t('취소') }}
               </button>
-              <button class="button button-primary" type="submit">수정 완료</button>
+              <button class="button button-primary" type="submit">{{ t('수정 완료') }}</button>
             </div>
           </form>
 
@@ -366,20 +368,20 @@ function deleteSelectedReply(password) {
                   v-if="editingReplyCommentId !== comment.id || editingReplyId !== reply.id"
                 >
                   <div class="comment-meta">
-                    <span class="reply-label">답글</span>
+                    <span class="reply-label">{{ t('답글') }}</span>
                     <time :datetime="reply.createdAt">{{ formatDateTime(reply.createdAt) }}</time>
                     <div class="comment-actions">
                       <button type="button" @click="startEditingReply(comment.id, reply)">
-                        수정
+                        {{ t('수정') }}
                       </button>
                       <button type="button" @click="openReplyDeleteModal(comment.id, reply)">
-                        삭제
+                        {{ t('삭제') }}
                       </button>
                     </div>
                   </div>
                   <p class="comment-content">{{ reply.content }}</p>
                   <small v-if="reply.updatedAt !== reply.createdAt" class="help-text">
-                    수정 {{ formatDateTime(reply.updatedAt) }}
+                    {{ t('수정') }} {{ formatDateTime(reply.updatedAt) }}
                   </small>
                 </template>
 
@@ -389,7 +391,7 @@ function deleteSelectedReply(password) {
                   @submit.prevent="submitReplyEdit(comment.id, reply.id)"
                 >
                   <label class="field-label" :for="`reply-edit-content-${reply.id}`">
-                    답글 수정
+                    {{ t('답글 수정') }}
                   </label>
                   <textarea
                     :id="`reply-edit-content-${reply.id}`"
@@ -399,10 +401,10 @@ function deleteSelectedReply(password) {
                     rows="3"
                   />
                   <p v-if="editReplyErrors.content" class="error-text">
-                    {{ editReplyErrors.content }}
+                    {{ t(editReplyErrors.content) }}
                   </p>
                   <label class="field-label" :for="`reply-edit-password-${reply.id}`">
-                    비밀번호
+                    {{ t('비밀번호') }}
                   </label>
                   <input
                     :id="`reply-edit-password-${reply.id}`"
@@ -411,17 +413,17 @@ function deleteSelectedReply(password) {
                     type="password"
                     autocomplete="current-password"
                     maxlength="20"
-                    placeholder="작성 시 비밀번호"
+                    :placeholder="t('작성 시 비밀번호')"
                   />
                   <p v-if="editReplyErrors.password" class="error-text">
-                    {{ editReplyErrors.password }}
+                    {{ t(editReplyErrors.password) }}
                   </p>
-                  <p v-if="replyError" class="error-text">{{ replyError }}</p>
+                  <p v-if="replyError" class="error-text">{{ t(replyError) }}</p>
                   <div class="button-row end">
                     <button class="button button-ghost" type="button" @click="cancelEditingReply">
-                      취소
+                      {{ t('취소') }}
                     </button>
-                    <button class="button button-primary" type="submit">수정 완료</button>
+                    <button class="button button-primary" type="submit">{{ t('수정 완료') }}</button>
                   </div>
                 </form>
               </li>
@@ -432,18 +434,18 @@ function deleteSelectedReply(password) {
               class="reply-form"
               @submit.prevent="submitReply(comment.id)"
             >
-              <label class="field-label" :for="`reply-content-${comment.id}`">답글 작성</label>
+              <label class="field-label" :for="`reply-content-${comment.id}`">{{ t('답글 작성') }}</label>
               <textarea
                 :id="`reply-content-${comment.id}`"
                 v-model="replyForm.content"
                 class="text-input comment-textarea"
                 maxlength="3000"
                 rows="3"
-                placeholder="답글을 입력해 주세요."
+                :placeholder="t('답글을 입력해 주세요.')"
               />
-              <p v-if="replyErrors.content" class="error-text">{{ replyErrors.content }}</p>
+              <p v-if="replyErrors.content" class="error-text">{{ t(replyErrors.content) }}</p>
               <label class="field-label" :for="`reply-password-${comment.id}`">
-                수정·삭제용 비밀번호
+                {{ t('수정·삭제용 비밀번호') }}
               </label>
               <input
                 :id="`reply-password-${comment.id}`"
@@ -454,36 +456,36 @@ function deleteSelectedReply(password) {
                 maxlength="20"
                 placeholder="4~20자"
               />
-              <p v-if="replyErrors.password" class="error-text">{{ replyErrors.password }}</p>
-              <p v-if="replyError" class="error-text">{{ replyError }}</p>
+              <p v-if="replyErrors.password" class="error-text">{{ t(replyErrors.password) }}</p>
+              <p v-if="replyError" class="error-text">{{ t(replyError) }}</p>
               <div class="button-row end">
                 <button class="button button-ghost" type="button" @click="cancelReplying">
-                  취소
+                  {{ t('취소') }}
                 </button>
-                <button class="button button-primary" type="submit">답글 등록</button>
+                <button class="button button-primary" type="submit">{{ t('답글 등록') }}</button>
               </div>
             </form>
           </div>
         </li>
       </ul>
-      <p v-else class="comment-empty">아직 댓글이 없습니다. 첫 댓글을 남겨보세요.</p>
+      <p v-else class="comment-empty">{{ t('아직 댓글이 없습니다. 첫 댓글을 남겨보세요.') }}</p>
 
       <form class="comment-form" @submit.prevent="submitComment">
         <div class="form-field">
-          <label class="field-label" for="comment-content">댓글 내용</label>
+          <label class="field-label" for="comment-content">{{ t('댓글 내용') }}</label>
           <textarea
             id="comment-content"
             v-model="commentForm.content"
             class="text-input comment-textarea"
             maxlength="3000"
             rows="4"
-            placeholder="댓글을 입력해 주세요."
+            :placeholder="t('댓글을 입력해 주세요.')"
           />
-          <p v-if="commentErrors.content" class="error-text">{{ commentErrors.content }}</p>
+          <p v-if="commentErrors.content" class="error-text">{{ t(commentErrors.content) }}</p>
         </div>
         <div class="comment-form-footer">
           <div>
-            <label class="field-label" for="comment-password">수정·삭제용 비밀번호</label>
+            <label class="field-label" for="comment-password">{{ t('수정·삭제용 비밀번호') }}</label>
             <input
               id="comment-password"
               v-model="commentForm.password"
@@ -493,21 +495,21 @@ function deleteSelectedReply(password) {
               maxlength="20"
               placeholder="4~20자"
             />
-            <p v-if="commentErrors.password" class="error-text">{{ commentErrors.password }}</p>
+            <p v-if="commentErrors.password" class="error-text">{{ t(commentErrors.password) }}</p>
           </div>
-          <button class="button button-primary" type="submit">댓글 등록</button>
+          <button class="button button-primary" type="submit">{{ t('댓글 등록') }}</button>
         </div>
-        <p v-if="commentError && !editingCommentId" class="error-text">{{ commentError }}</p>
+        <p v-if="commentError && !editingCommentId" class="error-text">{{ t(commentError) }}</p>
       </form>
     </section>
 
     <EmptyState
       v-else
-      title="게시글을 찾을 수 없습니다."
-      description="삭제되었거나 잘못된 주소입니다."
+      :title="t('게시글을 찾을 수 없습니다.')"
+      :description="t('삭제되었거나 잘못된 주소입니다.')"
     >
       <RouterLink class="button button-primary" :to="{ name: ROUTE_NAMES.POSTS }">
-        목록으로
+        {{ t('목록으로') }}
       </RouterLink>
     </EmptyState>
 

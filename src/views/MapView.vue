@@ -3,7 +3,9 @@ import { computed, nextTick, ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import EmptyState from '@/components/common/EmptyState.vue'
 import { useFavorites } from '@/composables/useFavorites'
+import { useLocale } from '@/composables/useLocale'
 import { getContentTypeOptions, getDistrictOptions, getMapItems } from '@/services/regionDataService'
+import { localizeRegionItems, translateCategory, translateDistrict } from '@/services/localizationService'
 
 const mapContainer = ref(null)
 const mapSection = ref(null)
@@ -19,13 +21,15 @@ const failedImageIds = ref(new Set())
 const districtOptions = getDistrictOptions()
 const contentTypeOptions = getContentTypeOptions()
 const { isFavorite, toggleFavorite } = useFavorites()
-const mapItems = computed(() => {
+const { locale, t } = useLocale()
+const rawMapItems = computed(() => {
   if (!isAllCategoriesSelected.value && !selectedCategoryCodes.value.length) {
     return []
   }
 
   return getMapItems(selectedDistrictCodes.value.join(','), selectedCategoryCodes.value.join(','))
 })
+const mapItems = computed(() => localizeRegionItems(rawMapItems.value, locale.value))
 const filteredMapItems = computed(() => {
   const keyword = searchQuery.value.trim().toLowerCase()
 
@@ -352,11 +356,11 @@ watch(
   <div class="container page-stack">
     <div>
       <p class="eyebrow">Map View</p>
-      <h1>서울 지역 지도</h1>
+      <h1>{{ t('서울 지역 지도') }}</h1>
     </div>
 
-    <div class="map-region-filter" aria-label="지역 선택 필터">
-      <strong>지역 선택</strong>
+    <div class="map-region-filter" :aria-label="t('지역 선택 필터')">
+      <strong>{{ t('지역 선택') }}</strong>
       <div class="map-region-buttons">
         <button
           type="button"
@@ -365,7 +369,7 @@ watch(
           :style="!selectedDistrictCodes.length ? { background: '#16a34a', color: '#fff', borderColor: '#16a34a' } : { background: '#fff', color: '#111827', borderColor: '#d1d5db' }"
           @click="selectedDistrictCodes = []"
         >
-          전체 서울
+          {{ t('전체 서울') }}
         </button>
         <button
           v-for="district in districtOptions"
@@ -376,13 +380,13 @@ watch(
           :style="selectedDistrictCodes.includes(district.code) ? { background: '#16a34a', color: '#fff', borderColor: '#16a34a' } : { background: '#fff', color: '#111827', borderColor: '#d1d5db' }"
           @click="toggleDistrict(district.code)"
         >
-          {{ district.name }}
+          {{ locale === 'en' ? translateDistrict(district.name) : district.name }}
         </button>
       </div>
     </div>
 
-    <div class="map-category-filter" aria-label="장소 종류 필터">
-      <strong>장소 종류</strong>
+    <div class="map-category-filter" :aria-label="t('장소 종류 필터')">
+      <strong>{{ t('장소 종류') }}</strong>
       <div class="map-category-buttons">
         <button
           type="button"
@@ -392,7 +396,7 @@ watch(
           @click="toggleCategory('')"
         >
           <span class="map-category-all-icon" aria-hidden="true"></span>
-          전체
+          {{ t('전체') }}
         </button>
         <button
           v-for="contentType in contentTypeOptions"
@@ -408,35 +412,35 @@ watch(
             :style="{ backgroundColor: contentType.color }"
             aria-hidden="true"
           ></span>
-          {{ contentType.name }}
+          {{ locale === 'en' ? translateCategory(contentType.name) : contentType.name }}
         </button>
       </div>
     </div>
 
-    <section ref="mapSection" class="map-container" aria-label="지도 영역">
+    <section ref="mapSection" class="map-container" :aria-label="t('지도 영역')">
       <div ref="mapContainer" class="map-renderer"></div>
       <div v-if="mapError" class="map-error">
-        {{ mapError }}
+        {{ t(mapError) }}
       </div>
     </section>
 
-    <section class="map-list-toolbar" aria-label="장소 목록 검색">
+    <section class="map-list-toolbar" :aria-label="t('장소 목록 검색')">
       <div>
-        <strong>장소 목록</strong>
+        <strong>{{ t('장소 목록') }}</strong>
         <p>
-          검색 결과 {{ filteredMapItems.length }}개
-          <span v-if="searchQuery">/ 필터 전체 {{ mapItems.length }}개</span>
+          {{ t('검색 결과') }} {{ filteredMapItems.length }}{{ locale === 'ko' ? '개' : '' }}
+          <span v-if="searchQuery">/ {{ t('필터 전체') }} {{ mapItems.length }}{{ locale === 'ko' ? '개' : '' }}</span>
         </p>
       </div>
       <div class="map-list-controls">
-        <div class="map-view-toggle" role="group" aria-label="장소 목록 보기 방식">
+        <div class="map-view-toggle" role="group" :aria-label="t('장소 목록 보기 방식')">
           <button
             type="button"
             :class="{ 'is-active': listViewMode === 'card' }"
             :aria-pressed="listViewMode === 'card'"
             @click="listViewMode = 'card'"
           >
-            ▦ 카드형
+            ▦ {{ t('카드형') }}
           </button>
           <button
             type="button"
@@ -444,17 +448,17 @@ watch(
             :aria-pressed="listViewMode === 'list'"
             @click="listViewMode = 'list'"
           >
-            ☰ 목록형
+            ☰ {{ t('목록형') }}
           </button>
         </div>
         <div class="map-search-field">
-          <label class="sr-only" for="map-place-search">장소 이름, 주소 또는 지역 검색</label>
+          <label class="sr-only" for="map-place-search">{{ t('장소 이름, 주소 또는 지역 검색') }}</label>
           <input
             id="map-place-search"
             v-model="searchQuery"
             class="text-input"
             type="search"
-            placeholder="장소 이름, 주소, 지역 검색"
+            :placeholder="t('장소 이름, 주소, 지역 검색')"
           />
           <button
             v-if="searchQuery"
@@ -462,7 +466,7 @@ watch(
             class="button button-ghost"
             @click="searchQuery = ''"
           >
-            초기화
+            {{ t('초기화') }}
           </button>
         </div>
       </div>
@@ -486,11 +490,11 @@ watch(
           <img
             v-if="item.imageUrl && !failedImageIds.has(item.id)"
             :src="item.imageUrl"
-            :alt="`${item.name} 대표 이미지`"
+            :alt="`${item.name} ${t('대표 이미지')}`"
             loading="lazy"
             @error="markImageAsFailed(item.id)"
           />
-          <span v-else>이미지 없음</span>
+          <span v-else>{{ t('이미지 없음') }}</span>
         </div>
         <div class="place-card-title">
           <h2>
@@ -505,30 +509,30 @@ watch(
             class="button button-secondary map-marker-button"
             @click="handleCardClick(item)"
           >
-            지도에서 보기
+            {{ t('지도에서 보기') }}
           </button>
           <button
             type="button"
             class="button favorite-button"
             :class="{ 'is-active': isFavorite(item) }"
             :aria-pressed="isFavorite(item)"
-            @click="toggleFavorite(item)"
+            @click="toggleFavorite(rawMapItems.find((rawItem) => rawItem.id === item.id) || item)"
           >
-            {{ isFavorite(item) ? '찜해제' : '찜하기' }}
+            {{ t(isFavorite(item) ? '찜해제' : '찜하기') }}
           </button>
         </div>
       </article>
     </div>
     <EmptyState
       v-else-if="!isAllCategoriesSelected && !selectedCategoryCodes.length"
-      title="장소 종류를 선택해 주세요."
-      description="전체 또는 원하는 장소 종류를 선택하면 지도와 목록에 표시됩니다."
+      :title="t('장소 종류를 선택해 주세요.')"
+      :description="t('전체 또는 원하는 장소 종류를 선택하면 지도와 목록에 표시됩니다.')"
     />
     <EmptyState
       v-else-if="searchQuery"
-      title="검색 결과가 없습니다."
-      description="다른 장소 이름, 주소 또는 지역명을 입력해 보세요."
+      :title="t('검색 결과가 없습니다.')"
+      :description="t('다른 장소 이름, 주소 또는 지역명을 입력해 보세요.')"
     />
-    <EmptyState v-else title="선택한 필터에 해당하는 장소가 없습니다." />
+    <EmptyState v-else :title="t('선택한 필터에 해당하는 장소가 없습니다.')" />
   </div>
 </template>

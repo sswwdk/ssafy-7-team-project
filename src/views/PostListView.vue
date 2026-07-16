@@ -3,9 +3,11 @@ import { computed, onMounted, ref } from 'vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import PostCard from '@/components/community/PostCard.vue'
 import { usePosts } from '@/composables/usePosts'
+import { useLocale } from '@/composables/useLocale'
 import { ROUTE_NAMES } from '@/constants/routes'
 
 const { posts, refreshPosts } = usePosts()
+const { t } = useLocale()
 const keyword = ref('')
 const selectedCategory = ref('all')
 
@@ -31,21 +33,21 @@ onMounted(refreshPosts)
     <div class="section-heading">
       <div>
         <p class="eyebrow">Anonymous Community</p>
-        <h1>서울 커뮤니티</h1>
+        <h1>{{ t('서울 커뮤니티') }}</h1>
       </div>
       <RouterLink class="button button-primary" :to="{ name: ROUTE_NAMES.POST_CREATE }">
-        글쓰기
+        {{ t('글쓰기') }}
       </RouterLink>
     </div>
 
-    <section class="filter-bar" aria-label="게시글 검색 및 필터">
-      <input v-model="keyword" class="text-input" placeholder="제목 또는 내용 검색" />
+    <section class="filter-bar" :aria-label="t('게시글 검색 및 필터')">
+      <input v-model="keyword" class="text-input" :placeholder="t('제목 또는 내용 검색')" />
       <select v-model="selectedCategory" class="text-input">
-        <option value="all">전체 카테고리</option>
-        <option value="free">자유</option>
-        <option value="travel">관광</option>
-        <option value="food">맛집</option>
-        <option value="festival">축제</option>
+        <option value="all">{{ t('전체 카테고리') }}</option>
+        <option value="free">{{ t('자유') }}</option>
+        <option value="travel">{{ t('관광') }}</option>
+        <option value="food">{{ t('맛집') }}</option>
+        <option value="festival">{{ t('축제') }}</option>
       </select>
     </section>
 
@@ -54,8 +56,8 @@ onMounted(refreshPosts)
     </div>
     <EmptyState
       v-else
-      title="조건에 맞는 게시글이 없습니다."
-      description="검색어를 바꾸거나 새 게시글을 작성해 주세요."
+      :title="t('조건에 맞는 게시글이 없습니다.')"
+      :description="t('검색어를 바꾸거나 새 게시글을 작성해 주세요.')"
     />
   </div>
 </template>

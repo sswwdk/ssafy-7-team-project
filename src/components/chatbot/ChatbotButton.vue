@@ -1,5 +1,6 @@
 <script setup>
 import { nextTick, onMounted, ref, watch } from 'vue'
+import { useLocale } from '@/composables/useLocale'
 
 const props = defineProps({
   isOpen: {
@@ -9,6 +10,7 @@ const props = defineProps({
 })
 
 defineEmits(['toggle'])
+const { t } = useLocale()
 
 const chatbotLabel = ref(null)
 const expandedWidth = ref('12rem')
@@ -30,7 +32,7 @@ onMounted(updateExpandedWidth)
     type="button"
     :aria-expanded="isOpen"
     :style="{ '--chatbot-expanded-width': expandedWidth }"
-    aria-label="지역정보 챗봇 열기"
+    :aria-label="t('지역정보 챗봇 열기')"
     @click="$emit('toggle')"
   >
     <svg
@@ -52,6 +54,6 @@ onMounted(updateExpandedWidth)
       <path d="M9 13v2" />
     </svg>
     <span v-else class="chatbot-button-icon" aria-hidden="true">×</span>
-    <span ref="chatbotLabel" class="chatbot-button-label">{{ isOpen ? '닫기' : 'AI 챗봇 도우미' }}</span>
+    <span ref="chatbotLabel" class="chatbot-button-label">{{ t(isOpen ? '닫기' : 'AI 챗봇 도우미') }}</span>
   </button>
 </template>

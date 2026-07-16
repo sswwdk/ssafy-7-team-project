@@ -5,6 +5,7 @@ import shoppingData from '@/data/서울_쇼핑.json'
 import accommodationData from '@/data/서울_숙박.json'
 import travelCourseData from '@/data/서울_여행코스.json'
 import festivalData from '@/data/서울_축제공연행사.json'
+import { localizeRegionItem } from '@/services/localizationService'
 
 const CONTENT_TYPE_DATASETS = Object.freeze([
   { code: '12', name: '관광지', color: '#FACC15', strokeColor: '#92400E', data: tourismData },
@@ -71,6 +72,7 @@ function normalizeText(value) {
 }
 
 function buildSearchText(item) {
+  const englishItem = localizeRegionItem(item, 'en')
   return normalizeText(
     [
       item.name,
@@ -78,7 +80,13 @@ function buildSearchText(item) {
       item.districtName,
       item.address,
       item.description,
-      item.tags?.join(' ')
+      item.tags?.join(' '),
+      englishItem.name,
+      englishItem.category,
+      englishItem.districtName,
+      englishItem.address,
+      englishItem.description,
+      englishItem.tags?.join(' ')
     ].join(' ')
   )
 }

@@ -2,6 +2,7 @@
 import { nextTick, ref, watch } from 'vue'
 import ChatMessage from './ChatMessage.vue'
 import { useChatbot } from '@/composables/useChatbot'
+import { useLocale } from '@/composables/useLocale'
 
 const props = defineProps({
   isOpen: {
@@ -12,6 +13,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 const { messages, isLoading, errorMessage, sendMessage, clearMessages } = useChatbot()
+const { t } = useLocale()
 const inputMessage = ref('')
 const messageList = ref(null)
 
@@ -62,32 +64,32 @@ async function submitMessage() {
 </script>
 
 <template>
-  <section v-if="isOpen" class="chatbot-panel" aria-label="지역정보 챗봇">
+  <section v-if="isOpen" class="chatbot-panel" :aria-label="t('지역정보 챗봇')">
     <header class="chatbot-header">
       <div>
         <strong>LocalHub AI</strong>
       </div>
       <div class="chatbot-header-actions">
-        <button type="button" class="icon-button" @click="clearMessages">초기화</button>
-        <button type="button" class="icon-button" @click="emit('close')">닫기</button>
+        <button type="button" class="icon-button" @click="clearMessages">{{ t('초기화') }}</button>
+        <button type="button" class="icon-button" @click="emit('close')">{{ t('닫기') }}</button>
       </div>
     </header>
 
     <div ref="messageList" class="chatbot-messages" aria-live="polite">
       <ChatMessage v-for="message in messages" :key="message.id" :message="message" />
-      <p v-if="isLoading" class="chatbot-status">답변을 생성하고 있습니다.</p>
+      <p v-if="isLoading" class="chatbot-status">{{ t('답변을 생성하고 있습니다.') }}</p>
     </div>
 
     <p v-if="errorMessage" class="chatbot-error">{{ errorMessage }}</p>
 
     <form class="chatbot-form" @submit.prevent="submitMessage">
-      <label class="sr-only" for="chatbot-input">질문 입력</label>
+      <label class="sr-only" for="chatbot-input">{{ t('질문 입력') }}</label>
       <textarea
         id="chatbot-input"
         v-model="inputMessage"
         rows="1"
         maxlength="500"
-        placeholder="예: 이번 달 서울 축제를 알려줘"
+        :placeholder="t('예: 이번 달 서울 축제를 알려줘')"
         :disabled="isLoading"
         @keydown.enter.exact.prevent="submitMessage"
       />
@@ -96,7 +98,7 @@ async function submitMessage() {
         type="submit"
         :disabled="isLoading || !inputMessage.trim()"
       >
-        전송
+        {{ t('전송') }}
       </button>
     </form>
   </section>

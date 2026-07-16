@@ -9,7 +9,8 @@ export function formatDateTime(value) {
     return '-'
   }
 
-  return new Intl.DateTimeFormat('ko-KR', {
+  const locale = typeof document !== 'undefined' && document.documentElement.lang === 'en' ? 'en-US' : 'ko-KR'
+  return new Intl.DateTimeFormat(locale, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -29,7 +30,8 @@ export function formatDate(value) {
     return '-'
   }
 
-  return new Intl.DateTimeFormat('ko-KR', {
+  const locale = typeof document !== 'undefined' && document.documentElement.lang === 'en' ? 'en-US' : 'ko-KR'
+  return new Intl.DateTimeFormat(locale, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit'
