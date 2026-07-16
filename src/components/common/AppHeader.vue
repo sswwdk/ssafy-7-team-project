@@ -91,6 +91,7 @@ onUnmounted(() => {
           @click="$emit('toggle-theme')"
         >
           <svg
+            v-if="isDarkMode"
             class="header-control-icon"
             viewBox="0 0 24 24"
             fill="none"
@@ -100,15 +101,28 @@ onUnmounted(() => {
             stroke-linejoin="round"
             aria-hidden="true"
           >
+            <circle cx="12" cy="12" r="4" />
             <path d="M12 2v2" />
+            <path d="M12 20v2" />
             <path d="m4.93 4.93 1.41 1.41" />
+            <path d="m17.66 17.66 1.41 1.41" />
+            <path d="M2 12h2" />
             <path d="M20 12h2" />
-            <path d="m19.07 4.93-1.41 1.41" />
-            <path d="M22 17v2a3 3 0 0 1-3 3h-2" />
-            <path d="M3 12h2" />
             <path d="m6.34 17.66-1.41 1.41" />
-            <path d="M3 22 21 4" />
-            <path d="M10 22a7 7 0 1 1 7-7" />
+            <path d="m19.07 4.93-1.41 1.41" />
+          </svg>
+          <svg
+            v-else
+            class="header-control-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9" />
           </svg>
           <span class="theme-toggle-label">{{ t(isDarkMode ? '라이트 모드' : '다크 모드') }}</span>
         </button>
@@ -131,9 +145,8 @@ onUnmounted(() => {
               stroke-linejoin="round"
               aria-hidden="true"
             >
-              <path d="M8.5 14H3.5v7h17v-7h-5" />
-              <path d="M18 8c0 5-6 9-6 9s-6-4-6-9a6 6 0 0 1 12 0" />
-              <circle cx="12" cy="8" r="2" />
+              <circle cx="11" cy="11" r="6" />
+              <path d="m20 20-3.5-3.5" />
             </svg>
             <span class="global-search-label">{{ t('통합 검색') }}</span>
           </button>
