@@ -74,6 +74,7 @@ onUnmounted(() => {
         <RouterLink :to="{ name: ROUTE_NAMES.POSTS }">커뮤니티</RouterLink>
         <RouterLink :to="{ name: ROUTE_NAMES.MAP }">지도</RouterLink>
         <RouterLink :to="{ name: ROUTE_NAMES.FESTIVALS }">축제</RouterLink>
+        <RouterLink :to="{ name: ROUTE_NAMES.FAVORITES }">찜 목록</RouterLink>
         <button
           type="button"
           class="theme-toggle-button"

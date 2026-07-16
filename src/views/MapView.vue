@@ -2,6 +2,7 @@
 import { computed, nextTick, ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import EmptyState from '@/components/common/EmptyState.vue'
+import { useFavorites } from '@/composables/useFavorites'
 import { getContentTypeOptions, getDistrictOptions, getMapItems } from '@/services/regionDataService'
 
 const mapContainer = ref(null)
@@ -17,6 +18,7 @@ const listViewMode = ref('card')
 const failedImageIds = ref(new Set())
 const districtOptions = getDistrictOptions()
 const contentTypeOptions = getContentTypeOptions()
+const { isFavorite, toggleFavorite } = useFavorites()
 const mapItems = computed(() => {
   if (!isAllCategoriesSelected.value && !selectedCategoryCodes.value.length) {
     return []
@@ -485,17 +487,30 @@ watch(
           <span v-else>이미지 없음</span>
         </div>
         <div class="place-card-title">
-          <h2>{{ item.name }}</h2>
-          <span class="badge">{{ item.category }}</span>
+          <h2>
+            {{ item.name }}
+            <span class="badge">{{ item.category }}</span>
+          </h2>
         </div>
         <p>{{ item.address }}</p>
-        <button
-          type="button"
-          class="button button-secondary map-marker-button"
-          @click="handleCardClick(item)"
-        >
-          지도에서 보기
-        </button>
+        <div class="map-card-actions">
+          <button
+            type="button"
+            class="button button-secondary map-marker-button"
+            @click="handleCardClick(item)"
+          >
+            지도에서 보기
+          </button>
+          <button
+            type="button"
+            class="button favorite-button"
+            :class="{ 'is-active': isFavorite(item) }"
+            :aria-pressed="isFavorite(item)"
+            @click="toggleFavorite(item)"
+          >
+            {{ isFavorite(item) ? '찜해제' : '찜하기' }}
+          </button>
+        </div>
       </article>
     </div>
     <EmptyState

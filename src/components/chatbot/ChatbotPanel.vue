@@ -66,7 +66,6 @@ async function submitMessage() {
     <header class="chatbot-header">
       <div>
         <strong>LocalHub AI</strong>
-        <span>서울 지역 JSON + 내 게시글</span>
       </div>
       <div class="chatbot-header-actions">
         <button type="button" class="icon-button" @click="clearMessages">초기화</button>
@@ -86,7 +85,7 @@ async function submitMessage() {
       <textarea
         id="chatbot-input"
         v-model="inputMessage"
-        rows="2"
+        rows="1"
         maxlength="500"
         placeholder="예: 이번 달 서울 축제를 알려줘"
         :disabled="isLoading"

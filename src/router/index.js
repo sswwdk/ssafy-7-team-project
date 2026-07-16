@@ -7,6 +7,7 @@ import PostDetailView from '@/views/PostDetailView.vue'
 import PostEditView from '@/views/PostEditView.vue'
 import MapView from '@/views/MapView.vue'
 import FestivalCalendarView from '@/views/FestivalCalendarView.vue'
+import FavoritesView from '@/views/FavoritesView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
 
 const routes = [
@@ -46,6 +47,11 @@ const routes = [
     path: '/festivals',
     name: ROUTE_NAMES.FESTIVALS,
     component: FestivalCalendarView
+  },
+  {
+    path: '/favorites',
+    name: ROUTE_NAMES.FAVORITES,
+    component: FavoritesView
   },
   {
     path: '/:pathMatch(.*)*',
