@@ -4,15 +4,18 @@ import EmptyState from '@/components/common/EmptyState.vue'
 import { useFavorites } from '@/composables/useFavorites'
 import { useLocale } from '@/composables/useLocale'
 import { ROUTE_NAMES } from '@/constants/routes'
+import { localizeRegionItems } from '@/services/localizationService'
 import { getContentTypeOptions } from '@/services/regionDataService'
 
 const { favorites, removeFavorite } = useFavorites()
+const { locale, t } = useLocale()
 const categoryStylesByCode = new Map(
   getContentTypeOptions().map((category) => [category.code, category])
 )
 const sortedFavorites = computed(() =>
   [...favorites.value].sort((left, right) => right.createdAt.localeCompare(left.createdAt))
 )
+const localizedFavorites = computed(() => localizeRegionItems(sortedFavorites.value, locale.value))
 
 function getFavoriteCategoryStyle(favorite) {
   const category = categoryStylesByCode.get(favorite.categoryCode)
@@ -34,12 +37,12 @@ function getFavoriteCategoryStyle(favorite) {
         <h1>{{ t('찜 목록') }}</h1>
         <p class="help-text">{{ t('저장한 장소와 축제를 한곳에서 확인하세요.') }}</p>
       </div>
-      <strong class="favorite-count">{{ sortedFavorites.length }}{{ locale === 'ko' ? '개' : '' }}</strong>
+      <strong class="favorite-count">{{ localizedFavorites.length }}{{ locale === 'ko' ? '개' : '' }}</strong>
     </div>
 
-    <div v-if="sortedFavorites.length" class="info-grid favorite-grid">
+    <div v-if="localizedFavorites.length" class="info-grid favorite-grid">
       <article
-        v-for="favorite in sortedFavorites"
+        v-for="favorite in localizedFavorites"
         :key="favorite.key"
         class="info-card favorite-card category-themed-card"
         :style="getFavoriteCategoryStyle(favorite)"

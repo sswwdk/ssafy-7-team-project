@@ -209,7 +209,12 @@ export function getFestivalItemsForDate(date = new Date()) {
 }
 
 export function getContentTypeOptions() {
-  return CONTENT_TYPE_DATASETS.map(({ code, name, color }) => ({ code, name, color }))
+  return CONTENT_TYPE_DATASETS.map(({ code, name, color, strokeColor }) => ({
+    code,
+    name,
+    color,
+    strokeColor,
+  }))
 }
 
 export function getDistrictOptions() {

@@ -92,6 +92,12 @@ p {
   font-weight: 600;
 }
 
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .main-nav a.router-link-active {
   color: var(--primary);
 }
@@ -1439,6 +1445,10 @@ p {
   margin: 0;
 }
 
+.favorite-card-actions .button {
+  text-align: center;
+}
+
 .map-place-results.info-grid .info-card {
   display: flex;
   flex-direction: column;
@@ -2186,6 +2196,12 @@ p {
   transform: translateY(-1px);
 }
 
+.header-control-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: none;
+}
+
 .global-search {
   position: relative;
   display: flex;
@@ -2539,17 +2555,37 @@ p {
   }
 
   .header-inner {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'brand controls'
+      'nav nav';
+    align-items: center;
+    gap: 10px;
     padding: 14px 0;
   }
 
+  .brand {
+    grid-area: brand;
+  }
+
   .main-nav {
+    grid-area: nav;
     width: 100%;
     justify-content: flex-start;
     flex-wrap: wrap;
     gap: 10px 14px;
+  }
+
+  .main-nav > a {
+    flex: 1 1 auto;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .header-controls {
+    grid-area: controls;
+    gap: 0.5rem;
   }
 
   .page-shell {
@@ -2761,16 +2797,27 @@ p {
 
   .theme-toggle-button,
   .global-search-button {
-    flex: 0 0 36px;
-    width: 36px;
-    min-height: 36px;
+    flex: 0 0 2.5rem;
+    width: 2.5rem;
+    min-height: 2.5rem;
     padding: 0;
+    border-color: #cbd5e1;
+    background: #fff;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 8%);
   }
 
   .language-toggle-button {
-    min-height: 36px;
-    padding: 0 10px;
+    min-height: 2.5rem;
+    padding: 0 0.75rem;
+    border-color: #cbd5e1;
+    background: #fff;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 8%);
     font-size: 0.82rem;
+  }
+
+  .header-control-icon {
+    width: 1.5rem;
+    height: 1.5rem;
   }
 
   .theme-toggle-label,
@@ -2779,7 +2826,11 @@ p {
   }
 
   .global-search-panel {
-    width: calc(100vw - 24px);
+    position: fixed;
+    top: 7.5rem;
+    right: 0.75rem;
+    left: 0.75rem;
+    width: auto;
   }
 }
 

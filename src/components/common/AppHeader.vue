@@ -80,6 +80,9 @@ onUnmounted(() => {
         <RouterLink :to="{ name: ROUTE_NAMES.MAP }">{{ t('지도') }}</RouterLink>
         <RouterLink :to="{ name: ROUTE_NAMES.FESTIVALS }">{{ t('축제') }}</RouterLink>
         <RouterLink :to="{ name: ROUTE_NAMES.FAVORITES }">{{ t('찜 목록') }}</RouterLink>
+      </nav>
+
+      <div class="header-controls">
         <button
           type="button"
           class="theme-toggle-button"
@@ -87,7 +90,26 @@ onUnmounted(() => {
           :aria-pressed="isDarkMode"
           @click="$emit('toggle-theme')"
         >
-          <span aria-hidden="true">{{ isDarkMode ? '☀️' : '🌙' }}</span>
+          <svg
+            class="header-control-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M12 2v2" />
+            <path d="m4.93 4.93 1.41 1.41" />
+            <path d="M20 12h2" />
+            <path d="m19.07 4.93-1.41 1.41" />
+            <path d="M22 17v2a3 3 0 0 1-3 3h-2" />
+            <path d="M3 12h2" />
+            <path d="m6.34 17.66-1.41 1.41" />
+            <path d="M3 22 21 4" />
+            <path d="M10 22a7 7 0 1 1 7-7" />
+          </svg>
           <span class="theme-toggle-label">{{ t(isDarkMode ? '라이트 모드' : '다크 모드') }}</span>
         </button>
         <div ref="searchContainer" class="global-search">
@@ -99,7 +121,20 @@ onUnmounted(() => {
             aria-controls="global-search-panel"
             @click="toggleSearch"
           >
-            <span aria-hidden="true">⌕</span>
+            <svg
+              class="header-control-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M8.5 14H3.5v7h17v-7h-5" />
+              <path d="M18 8c0 5-6 9-6 9s-6-4-6-9a6 6 0 0 1 12 0" />
+              <circle cx="12" cy="8" r="2" />
+            </svg>
             <span class="global-search-label">{{ t('통합 검색') }}</span>
           </button>
 
@@ -151,10 +186,24 @@ onUnmounted(() => {
           :aria-label="locale === 'ko' ? 'Switch to English' : '한국어로 전환'"
           @click="toggleLocale"
         >
-          <span aria-hidden="true">🌐</span>
+          <svg
+            class="header-control-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M2 12h20" />
+            <path d="M12 2a15.3 15.3 0 0 1 0 20" />
+            <path d="M12 2a15.3 15.3 0 0 0 0 20" />
+          </svg>
           <strong>{{ locale === 'ko' ? 'EN' : 'KO' }}</strong>
         </button>
-      </nav>
+      </div>
     </div>
   </header>
 </template>
