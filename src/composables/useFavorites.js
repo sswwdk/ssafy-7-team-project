@@ -3,12 +3,12 @@ import { FAVORITES_STORAGE_KEY } from '@/constants/storage'
 import { getRegionItems } from '@/services/regionDataService'
 
 const DEFAULT_FAVORITE_KEYS = Object.freeze([
-  '15:4076709',
+  '12:1059877',
+  '12:736737',
   '14:4077758',
-  '15:2490376',
-  '15:3051471',
-  '15:3351451',
   '14:3338761',
+  '38:688998',
+  '38:690568',
 ])
 
 function readFavorites() {
