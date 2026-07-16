@@ -670,10 +670,7 @@ p {
 }
 
 .place-card-title {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 8px;
+  display: block;
 }
 
 .place-card-title h2 {
@@ -681,12 +678,73 @@ p {
 }
 
 .place-card-title .badge {
+  margin-left: 0.5rem;
+  vertical-align: middle;
   line-height: 1;
 }
 
 .map-marker-button {
   width: 100%;
   margin-top: 8px;
+}
+
+.map-card-actions,
+.favorite-card-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.map-card-actions .button,
+.favorite-card-actions .button {
+  width: 100%;
+  margin: 0;
+}
+
+.map-place-results.info-grid .info-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.map-place-results.info-grid .map-card-actions {
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+.favorite-grid .favorite-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.favorite-grid .favorite-card-actions {
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+.favorite-button {
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid #99f6e4;
+  border-radius: 10px;
+  color: var(--primary-dark);
+  background: #f0fdfa;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.favorite-button:hover {
+  background: #ccfbf1;
+}
+
+.favorite-button.is-active {
+  border-color: var(--primary);
+  color: #fff;
+  background: var(--primary);
+}
+
+.favorite-button.is-active:hover {
+  background: var(--primary-dark);
 }
 
 .map-list-toolbar {
@@ -763,7 +821,7 @@ p {
 
 .map-place-list .info-card {
   display: grid;
-  grid-template-columns: minmax(170px, 0.8fr) minmax(240px, 1.5fr) 140px;
+  grid-template-columns: minmax(170px, 0.8fr) minmax(240px, 1.5fr) minmax(230px, 0.9fr);
   align-items: center;
   gap: 16px;
   padding: 14px 16px;
@@ -771,7 +829,7 @@ p {
 
 .map-place-list .info-card h2,
 .map-place-list .info-card p,
-.map-place-list .map-marker-button {
+.map-place-list .map-card-actions {
   margin: 0;
 }
 
@@ -1144,6 +1202,41 @@ p {
   -webkit-line-clamp: 3;
 }
 
+.festival-favorite-button {
+  margin-top: 16px;
+}
+
+.favorite-count {
+  flex: none;
+  color: var(--primary);
+}
+
+.favorite-card-image {
+  display: grid;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  margin-bottom: 16px;
+  border-radius: 10px;
+  background: #e2e8f0;
+  place-items: center;
+}
+
+.favorite-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.favorite-card-image span,
+.favorite-date {
+  color: var(--muted);
+}
+
+.favorite-date {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+}
+
 .chatbot-floating-button {
   position: fixed;
   right: 24px;
@@ -1191,23 +1284,26 @@ p {
   gap: 3px;
 }
 
-.chatbot-header span {
-  font-size: 0.75rem;
-  opacity: 0.8;
-}
-
 .chatbot-header-actions {
   display: flex;
   gap: 8px;
+  margin-right: 0.5rem;
 }
 
-.icon-button {
-  padding: 6px;
-  border: 0;
-  color: inherit;
-  background: transparent;
+.chatbot-header .icon-button {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid rgb(255 255 255 / 55%);
+  border-radius: 8px;
+  color: #fff;
+  background: rgb(255 255 255 / 14%);
   cursor: pointer;
   font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.chatbot-header .icon-button:hover {
+  background: rgb(255 255 255 / 25%);
 }
 
 .chatbot-messages {
@@ -1272,6 +1368,7 @@ p {
 .chatbot-form textarea {
   min-height: 44px;
   padding: 10px;
+  overflow-y: hidden;
   resize: none;
 }
 
@@ -1651,6 +1748,11 @@ p {
     flex-direction: column;
   }
 
+  .section-heading.favorite-heading {
+    align-items: flex-end;
+    flex-direction: row;
+  }
+
   .map-list-toolbar,
   .map-list-controls,
   .map-search-field {
@@ -1696,6 +1798,10 @@ p {
   .chatbot-floating-button {
     right: 16px;
     bottom: 16px;
+  }
+
+  .chatbot-panel + .chatbot-floating-button {
+    display: none;
   }
 
   .theme-toggle-button,

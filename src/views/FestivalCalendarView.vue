@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import EmptyState from '@/components/common/EmptyState.vue'
+import { useFavorites } from '@/composables/useFavorites'
 import { getFestivalItems } from '@/services/regionDataService'
 import { getSeoulWeather } from '@/services/weatherService'
 import { formatDate } from '@/utils/date'
@@ -13,6 +14,7 @@ const selectedStatus = ref('month')
 const weather = ref(null)
 const weatherError = ref('')
 const isWeatherLoading = ref(false)
+const { isFavorite, toggleFavorite } = useFavorites()
 const weekDays = Object.freeze(['일', '월', '화', '수', '목', '금', '토'])
 const weatherController = new AbortController()
 let clockTimer = null
@@ -390,6 +392,15 @@ onUnmounted(() => {
             <p v-if="festival.description" class="festival-event-description">
               {{ festival.description }}
             </p>
+            <button
+              type="button"
+              class="button favorite-button festival-favorite-button"
+              :class="{ 'is-active': isFavorite(festival) }"
+              :aria-pressed="isFavorite(festival)"
+              @click="toggleFavorite(festival)"
+            >
+              {{ isFavorite(festival) ? '찜해제' : '찜하기' }}
+            </button>
           </div>
         </article>
       </div>
