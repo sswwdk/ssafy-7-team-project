@@ -634,12 +634,14 @@ p {
 }
 
 .landing-hero {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
   gap: 42px;
   min-height: 520px;
   padding: 48px;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid #bae6fd;
   border-radius: 32px;
   background:
