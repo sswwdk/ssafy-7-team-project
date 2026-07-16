@@ -18,6 +18,8 @@ const isAllCategoriesSelected = ref(false)
 const searchQuery = ref('')
 const listViewMode = ref('card')
 const failedImageIds = ref(new Set())
+const isRegionFilterOpen = ref(false)
+const isCategoryFilterOpen = ref(true)
 const districtOptions = getDistrictOptions()
 const contentTypeOptions = getContentTypeOptions()
 const { isFavorite, toggleFavorite } = useFavorites()
@@ -30,6 +32,26 @@ const rawMapItems = computed(() => {
   return getMapItems(selectedDistrictCodes.value.join(','), selectedCategoryCodes.value.join(','))
 })
 const mapItems = computed(() => localizeRegionItems(rawMapItems.value, locale.value))
+const regionSelectionSummary = computed(() =>
+  selectedDistrictCodes.value.length
+    ? districtOptions
+      .filter((district) => selectedDistrictCodes.value.includes(district.code))
+      .map((district) => locale.value === 'en' ? translateDistrict(district.name) : district.name)
+      .join(' · ')
+    : t('전체 서울')
+)
+const categorySelectionSummary = computed(() => {
+  if (isAllCategoriesSelected.value) return t('전체')
+
+  if (!selectedCategoryCodes.value.length) {
+    return locale.value === 'ko' ? '선택 없음' : 'None selected'
+  }
+
+  return contentTypeOptions
+    .filter((contentType) => selectedCategoryCodes.value.includes(contentType.code))
+    .map((contentType) => locale.value === 'en' ? translateCategory(contentType.name) : contentType.name)
+    .join(' · ')
+})
 const filteredMapItems = computed(() => {
   const keyword = searchQuery.value.trim().toLowerCase()
 
@@ -359,14 +381,32 @@ watch(
       <h1>{{ t('서울 지역 지도') }}</h1>
     </div>
 
-    <div class="map-region-filter" :aria-label="t('지역 선택 필터')">
-      <strong>{{ t('지역 선택') }}</strong>
-      <div class="map-region-buttons">
+    <div
+      class="map-region-filter"
+      :class="{ 'is-mobile-collapsed': !isRegionFilterOpen }"
+      :aria-label="t('지역 선택 필터')"
+    >
+      <button
+        type="button"
+        class="map-filter-heading"
+        :aria-expanded="isRegionFilterOpen"
+        @click="isRegionFilterOpen = !isRegionFilterOpen"
+      >
+        <span>
+          <strong>{{ t('지역 선택') }}</strong>
+          <small>{{ regionSelectionSummary }}</small>
+        </span>
+        <span
+          class="map-filter-toggle"
+          :class="{ 'is-expanded': isRegionFilterOpen }"
+          aria-hidden="true"
+        ></span>
+      </button>
+      <div class="map-region-buttons map-filter-options">
         <button
           type="button"
           class="map-region-button"
           :class="{ 'is-active': !selectedDistrictCodes.length }"
-          :style="!selectedDistrictCodes.length ? { background: '#16a34a', color: '#fff', borderColor: '#16a34a' } : { background: '#fff', color: '#111827', borderColor: '#d1d5db' }"
           @click="selectedDistrictCodes = []"
         >
           {{ t('전체 서울') }}
@@ -377,7 +417,6 @@ watch(
           type="button"
           class="map-region-button"
           :class="{ 'is-active': selectedDistrictCodes.includes(district.code) }"
-          :style="selectedDistrictCodes.includes(district.code) ? { background: '#16a34a', color: '#fff', borderColor: '#16a34a' } : { background: '#fff', color: '#111827', borderColor: '#d1d5db' }"
           @click="toggleDistrict(district.code)"
         >
           {{ locale === 'en' ? translateDistrict(district.name) : district.name }}
@@ -385,9 +424,28 @@ watch(
       </div>
     </div>
 
-    <div class="map-category-filter" :aria-label="t('장소 종류 필터')">
-      <strong>{{ t('장소 종류') }}</strong>
-      <div class="map-category-buttons">
+    <div
+      class="map-category-filter"
+      :class="{ 'is-mobile-collapsed': !isCategoryFilterOpen }"
+      :aria-label="t('장소 종류 필터')"
+    >
+      <button
+        type="button"
+        class="map-filter-heading"
+        :aria-expanded="isCategoryFilterOpen"
+        @click="isCategoryFilterOpen = !isCategoryFilterOpen"
+      >
+        <span>
+          <strong>{{ t('장소 종류') }}</strong>
+          <small>{{ categorySelectionSummary }}</small>
+        </span>
+        <span
+          class="map-filter-toggle"
+          :class="{ 'is-expanded': isCategoryFilterOpen }"
+          aria-hidden="true"
+        ></span>
+      </button>
+      <div class="map-category-buttons map-filter-options">
         <button
           type="button"
           class="map-category-button"
