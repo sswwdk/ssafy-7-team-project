@@ -137,16 +137,22 @@ function getRequestedMapItem() {
   return getMapItems('', '').find((item) => String(item.id) === placeId) || null
 }
 
-function applyRequestedPlaceFilter() {
+function applyRequestedMapFilters() {
   const item = getRequestedMapItem()
 
-  if (!item) {
+  if (item) {
+    selectedCategoryCodes.value = [item.categoryCode]
+    isAllCategoriesSelected.value = false
+    selectedDistrictCodes.value = item.districtCode ? [item.districtCode] : []
     return
   }
 
-  selectedCategoryCodes.value = [item.categoryCode]
+  const categoryCode = String(route.query.category || '')
+  const hasCategory = contentTypeOptions.some((category) => category.code === categoryCode)
+
+  selectedCategoryCodes.value = hasCategory ? [categoryCode] : []
   isAllCategoriesSelected.value = false
-  selectedDistrictCodes.value = item.districtCode ? [item.districtCode] : []
+  selectedDistrictCodes.value = []
 }
 
 function focusRequestedPlace() {
@@ -301,7 +307,7 @@ onMounted(async () => {
   }
 
   try {
-    applyRequestedPlaceFilter()
+    applyRequestedMapFilters()
     kakaoMapsApi = await loadKakaoScript()
     kakaoMapsApi.maps.load(() => {
       if (!mapContainer.value) {
@@ -330,9 +336,9 @@ watch([selectedDistrictCodes, selectedCategoryCodes, isAllCategoriesSelected], (
 }, { deep: true })
 
 watch(
-  () => route.query.place,
+  () => [route.query.place, route.query.category],
   async () => {
-    applyRequestedPlaceFilter()
+    applyRequestedMapFilters()
     await nextTick()
     renderMap()
     if (focusRequestedPlace()) {

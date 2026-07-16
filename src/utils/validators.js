@@ -39,3 +39,27 @@ export function validatePostInput(input, options = {}) {
     }
   }
 }
+
+export function validateCommentInput(input) {
+  const errors = {}
+  const content = input.content?.trim() || ''
+  const password = input.password?.trim() || ''
+
+  if (!content) {
+    errors.content = '댓글 내용을 입력해 주세요.'
+  } else if (content.length > 3000) {
+    errors.content = '댓글은 3,000자 이하로 입력해 주세요.'
+  }
+
+  if (!password) {
+    errors.password = '비밀번호를 입력해 주세요.'
+  } else if (password.length < 4 || password.length > 20) {
+    errors.password = '비밀번호는 4~20자로 입력해 주세요.'
+  }
+
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors,
+    value: { content, password }
+  }
+}

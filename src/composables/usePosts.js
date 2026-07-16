@@ -5,6 +5,7 @@ import {
   deletePost as deleteStoredPost,
   getPostById,
   getPosts,
+  togglePostRecommendation,
   updatePost as updateStoredPost
 } from '@/services/postStorageService'
 
@@ -41,12 +42,19 @@ export function usePosts() {
     return post
   }
 
+  function toggleRecommendation(postId) {
+    const post = togglePostRecommendation(postId)
+    refreshPosts()
+    return post
+  }
+
   return {
     posts,
     refreshPosts,
     findPost,
     createPost,
     updatePost,
-    removePost
+    removePost,
+    toggleRecommendation
   }
 }

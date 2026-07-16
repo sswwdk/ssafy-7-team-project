@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { ROUTE_NAMES } from '@/constants/routes'
 import HomeView from '@/views/HomeView.vue'
+import MainView from '@/views/MainView.vue'
 import PostListView from '@/views/PostListView.vue'
 import PostCreateView from '@/views/PostCreateView.vue'
 import PostDetailView from '@/views/PostDetailView.vue'
@@ -14,6 +15,11 @@ const routes = [
   {
     path: '/',
     name: ROUTE_NAMES.HOME,
+    component: MainView
+  },
+  {
+    path: '/dashboard',
+    name: ROUTE_NAMES.DASHBOARD,
     component: HomeView
   },
   {

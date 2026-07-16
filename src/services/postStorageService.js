@@ -61,6 +61,14 @@ function createPostId() {
   return `post-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
 }
 
+function createCommentId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+
+  return `comment-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+}
+
 function addMissingDummyPosts(posts) {
   const existingIds = new Set(posts.map((post) => post.id))
   const missingDummyPosts = DUMMY_POSTS.filter((post) => !existingIds.has(post.id)).map((post) => ({
@@ -172,4 +180,247 @@ export function deletePost(postId, password) {
   writePosts(posts)
 
   return deletedPost
+}
+
+export function togglePostRecommendation(postId) {
+  const posts = readPosts()
+  const postIndex = posts.findIndex((post) => post.id === postId)
+
+  if (postIndex < 0) {
+    const error = new Error('게시글을 찾을 수 없습니다.')
+    error.code = 'POST_NOT_FOUND'
+    throw error
+  }
+
+  const isRecommended = !posts[postIndex].isRecommended
+  const currentCount = Math.max(0, Number(posts[postIndex].recommendationCount) || 0)
+  const updatedPost = {
+    ...posts[postIndex],
+    isRecommended,
+    recommendationCount: Math.max(0, currentCount + (isRecommended ? 1 : -1))
+  }
+
+  posts.splice(postIndex, 1, updatedPost)
+  writePosts(posts)
+
+  return updatedPost
+}
+
+export function createComment(postId, input) {
+  const posts = readPosts()
+  const postIndex = posts.findIndex((post) => post.id === postId)
+
+  if (postIndex < 0) {
+    const error = new Error('게시글을 찾을 수 없습니다.')
+    error.code = 'POST_NOT_FOUND'
+    throw error
+  }
+
+  const now = new Date().toISOString()
+  const comment = {
+    id: createCommentId(),
+    content: input.content.trim(),
+    password: input.password,
+    createdAt: now,
+    updatedAt: now
+  }
+
+  posts[postIndex] = {
+    ...posts[postIndex],
+    comments: [...(posts[postIndex].comments || []), comment]
+  }
+  writePosts(posts)
+
+  return comment
+}
+
+export function updateComment(postId, commentId, input, password) {
+  const posts = readPosts()
+  const postIndex = posts.findIndex((post) => post.id === postId)
+
+  if (postIndex < 0) {
+    const error = new Error('게시글을 찾을 수 없습니다.')
+    error.code = 'POST_NOT_FOUND'
+    throw error
+  }
+
+  const comments = posts[postIndex].comments || []
+  const commentIndex = comments.findIndex((comment) => comment.id === commentId)
+
+  if (commentIndex < 0) {
+    const error = new Error('댓글을 찾을 수 없습니다.')
+    error.code = 'COMMENT_NOT_FOUND'
+    throw error
+  }
+
+  verifyPassword(comments[commentIndex], password)
+
+  const updatedComment = {
+    ...comments[commentIndex],
+    content: input.content.trim(),
+    updatedAt: new Date().toISOString()
+  }
+  const updatedComments = [...comments]
+  updatedComments.splice(commentIndex, 1, updatedComment)
+  posts[postIndex] = { ...posts[postIndex], comments: updatedComments }
+  writePosts(posts)
+
+  return updatedComment
+}
+
+export function deleteComment(postId, commentId, password) {
+  const posts = readPosts()
+  const postIndex = posts.findIndex((post) => post.id === postId)
+
+  if (postIndex < 0) {
+    const error = new Error('게시글을 찾을 수 없습니다.')
+    error.code = 'POST_NOT_FOUND'
+    throw error
+  }
+
+  const comments = posts[postIndex].comments || []
+  const commentIndex = comments.findIndex((comment) => comment.id === commentId)
+
+  if (commentIndex < 0) {
+    const error = new Error('댓글을 찾을 수 없습니다.')
+    error.code = 'COMMENT_NOT_FOUND'
+    throw error
+  }
+
+  verifyPassword(comments[commentIndex], password)
+  const updatedComments = [...comments]
+  const [deletedComment] = updatedComments.splice(commentIndex, 1)
+  posts[postIndex] = { ...posts[postIndex], comments: updatedComments }
+  writePosts(posts)
+
+  return deletedComment
+}
+
+export function createReply(postId, commentId, input) {
+  const posts = readPosts()
+  const postIndex = posts.findIndex((post) => post.id === postId)
+
+  if (postIndex < 0) {
+    const error = new Error('게시글을 찾을 수 없습니다.')
+    error.code = 'POST_NOT_FOUND'
+    throw error
+  }
+
+  const comments = posts[postIndex].comments || []
+  const commentIndex = comments.findIndex((comment) => comment.id === commentId)
+
+  if (commentIndex < 0) {
+    const error = new Error('댓글을 찾을 수 없습니다.')
+    error.code = 'COMMENT_NOT_FOUND'
+    throw error
+  }
+
+  const now = new Date().toISOString()
+  const reply = {
+    id: createCommentId(),
+    content: input.content.trim(),
+    password: input.password,
+    createdAt: now,
+    updatedAt: now
+  }
+  const updatedComments = [...comments]
+  updatedComments[commentIndex] = {
+    ...comments[commentIndex],
+    replies: [...(comments[commentIndex].replies || []), reply]
+  }
+  posts[postIndex] = { ...posts[postIndex], comments: updatedComments }
+  writePosts(posts)
+
+  return reply
+}
+
+export function updateReply(postId, commentId, replyId, input, password) {
+  const posts = readPosts()
+  const postIndex = posts.findIndex((post) => post.id === postId)
+
+  if (postIndex < 0) {
+    const error = new Error('게시글을 찾을 수 없습니다.')
+    error.code = 'POST_NOT_FOUND'
+    throw error
+  }
+
+  const comments = posts[postIndex].comments || []
+  const commentIndex = comments.findIndex((comment) => comment.id === commentId)
+
+  if (commentIndex < 0) {
+    const error = new Error('댓글을 찾을 수 없습니다.')
+    error.code = 'COMMENT_NOT_FOUND'
+    throw error
+  }
+
+  const replies = comments[commentIndex].replies || []
+  const replyIndex = replies.findIndex((reply) => reply.id === replyId)
+
+  if (replyIndex < 0) {
+    const error = new Error('대댓글을 찾을 수 없습니다.')
+    error.code = 'REPLY_NOT_FOUND'
+    throw error
+  }
+
+  verifyPassword(replies[replyIndex], password)
+
+  const updatedReply = {
+    ...replies[replyIndex],
+    content: input.content.trim(),
+    updatedAt: new Date().toISOString()
+  }
+  const updatedReplies = [...replies]
+  updatedReplies.splice(replyIndex, 1, updatedReply)
+  const updatedComments = [...comments]
+  updatedComments[commentIndex] = { ...comments[commentIndex], replies: updatedReplies }
+  posts[postIndex] = { ...posts[postIndex], comments: updatedComments }
+  writePosts(posts)
+
+  return updatedReply
+}
+
+export function deleteReply(postId, commentId, replyId, password) {
+  const posts = readPosts()
+  const postIndex = posts.findIndex((post) => post.id === postId)
+
+  if (postIndex < 0) {
+    const error = new Error('게시글을 찾을 수 없습니다.')
+    error.code = 'POST_NOT_FOUND'
+    throw error
+  }
+
+  const comments = posts[postIndex].comments || []
+  const commentIndex = comments.findIndex((comment) => comment.id === commentId)
+
+  if (commentIndex < 0) {
+    const error = new Error('댓글을 찾을 수 없습니다.')
+    error.code = 'COMMENT_NOT_FOUND'
+    throw error
+  }
+
+  const replies = comments[commentIndex].replies || []
+  const replyIndex = replies.findIndex((reply) => reply.id === replyId)
+
+  if (replyIndex < 0) {
+    const error = new Error('대댓글을 찾을 수 없습니다.')
+    error.code = 'REPLY_NOT_FOUND'
+    throw error
+  }
+
+  verifyPassword(replies[replyIndex], password)
+  const updatedReplies = [...replies]
+  const [deletedReply] = updatedReplies.splice(replyIndex, 1)
+  const updatedComments = [...comments]
+  updatedComments[commentIndex] = { ...comments[commentIndex], replies: updatedReplies }
+  posts[postIndex] = { ...posts[postIndex], comments: updatedComments }
+  writePosts(posts)
+
+  return deletedReply
+}
+
+export function getPostCommentCount(post) {
+  return (post?.comments || []).reduce(
+    (count, comment) => count + 1 + (comment.replies?.length || 0),
+    0
+  )
 }
