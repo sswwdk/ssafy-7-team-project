@@ -1,5 +1,6 @@
 export const ROUTE_NAMES = Object.freeze({
   HOME: 'home',
+  DASHBOARD: 'dashboard',
   POSTS: 'posts',
   POST_CREATE: 'post-create',
   POST_DETAIL: 'post-detail',
