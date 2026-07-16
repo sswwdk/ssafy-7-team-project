@@ -1,5 +1,7 @@
 <script setup>
-defineProps({
+import { nextTick, onMounted, ref, watch } from 'vue'
+
+const props = defineProps({
   isOpen: {
     type: Boolean,
     default: false
@@ -7,6 +9,19 @@ defineProps({
 })
 
 defineEmits(['toggle'])
+
+const chatbotLabel = ref(null)
+const expandedWidth = ref('12rem')
+
+async function updateExpandedWidth() {
+  await nextTick()
+
+  const labelWidth = chatbotLabel.value?.scrollWidth || 0
+  expandedWidth.value = `${labelWidth + 80}px`
+}
+
+watch(() => props.isOpen, updateExpandedWidth)
+onMounted(updateExpandedWidth)
 </script>
 
 <template>
@@ -14,6 +29,7 @@ defineEmits(['toggle'])
     class="chatbot-floating-button"
     type="button"
     :aria-expanded="isOpen"
+    :style="{ '--chatbot-expanded-width': expandedWidth }"
     aria-label="지역정보 챗봇 열기"
     @click="$emit('toggle')"
   >
@@ -36,6 +52,6 @@ defineEmits(['toggle'])
       <path d="M9 13v2" />
     </svg>
     <span v-else class="chatbot-button-icon" aria-hidden="true">×</span>
-    <span class="chatbot-button-label">{{ isOpen ? '닫기' : 'AI 챗봇 도우미' }}</span>
+    <span ref="chatbotLabel" class="chatbot-button-label">{{ isOpen ? '닫기' : 'AI 챗봇 도우미' }}</span>
   </button>
 </template>
