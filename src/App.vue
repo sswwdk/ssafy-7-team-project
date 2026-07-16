@@ -28,20 +28,10 @@ onMounted(() => {
 
 <template>
   <div class="app-shell">
-    <AppHeader />
+    <AppHeader :is-dark-mode="isDarkMode" @toggle-theme="toggleTheme" />
     <main class="page-shell">
       <RouterView />
     </main>
-    <button
-      type="button"
-      class="theme-toggle-button"
-      :aria-label="isDarkMode ? '라이트 모드로 전환' : '다크 모드로 전환'"
-      :aria-pressed="isDarkMode"
-      @click="toggleTheme"
-    >
-      <span aria-hidden="true">{{ isDarkMode ? '☀️' : '🌙' }}</span>
-      {{ isDarkMode ? '라이트 모드' : '다크 모드' }}
-    </button>
     <ChatbotWidget />
   </div>
 </template>

@@ -127,7 +127,7 @@ function getRequestedMapItem() {
     return null
   }
 
-  return getMapItems('', '').find((item) => item.id === placeId) || null
+  return getMapItems('', '').find((item) => String(item.id) === placeId) || null
 }
 
 function applyRequestedPlaceFilter() {
