@@ -14,6 +14,7 @@ const selectedCategoryCodes = ref([])
 const isAllCategoriesSelected = ref(false)
 const searchQuery = ref('')
 const listViewMode = ref('card')
+const failedImageIds = ref(new Set())
 const districtOptions = getDistrictOptions()
 const contentTypeOptions = getContentTypeOptions()
 const mapItems = computed(() => {
@@ -69,6 +70,10 @@ let markers = []
 let activeInfoWindow = null
 let markerStates = {}
 const markerImageCache = new Map()
+
+function markImageAsFailed(itemId) {
+  failedImageIds.value = new Set([...failedImageIds.value, itemId])
+}
 
 function createCategoryMarkerImage(kakao, item) {
   if (markerImageCache.has(item.categoryCode)) {
@@ -469,8 +474,20 @@ watch(
           '--category-stroke-color': item.markerStrokeColor,
         }"
       >
-        <span class="badge">{{ item.category }}</span>
-        <h2>{{ item.name }}</h2>
+        <div v-if="listViewMode === 'card'" class="place-card-image">
+          <img
+            v-if="item.imageUrl && !failedImageIds.has(item.id)"
+            :src="item.imageUrl"
+            :alt="`${item.name} 대표 이미지`"
+            loading="lazy"
+            @error="markImageAsFailed(item.id)"
+          />
+          <span v-else>이미지 없음</span>
+        </div>
+        <div class="place-card-title">
+          <h2>{{ item.name }}</h2>
+          <span class="badge">{{ item.category }}</span>
+        </div>
         <p>{{ item.address }}</p>
         <button
           type="button"
