@@ -3,11 +3,26 @@ import { computed } from 'vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import { useFavorites } from '@/composables/useFavorites'
 import { ROUTE_NAMES } from '@/constants/routes'
+import { getContentTypeOptions } from '@/services/regionDataService'
 
 const { favorites, removeFavorite } = useFavorites()
+const categoryStylesByCode = new Map(
+  getContentTypeOptions().map((category) => [category.code, category])
+)
 const sortedFavorites = computed(() =>
   [...favorites.value].sort((left, right) => right.createdAt.localeCompare(left.createdAt))
 )
+
+function getFavoriteCategoryStyle(favorite) {
+  const category = categoryStylesByCode.get(favorite.categoryCode)
+
+  if (!category) return {}
+
+  return {
+    '--category-color': category.color,
+    '--category-stroke-color': category.strokeColor,
+  }
+}
 </script>
 
 <template>
@@ -22,7 +37,12 @@ const sortedFavorites = computed(() =>
     </div>
 
     <div v-if="sortedFavorites.length" class="info-grid favorite-grid">
-      <article v-for="favorite in sortedFavorites" :key="favorite.key" class="info-card favorite-card">
+      <article
+        v-for="favorite in sortedFavorites"
+        :key="favorite.key"
+        class="info-card favorite-card category-themed-card"
+        :style="getFavoriteCategoryStyle(favorite)"
+      >
         <div class="favorite-card-image">
           <img v-if="favorite.imageUrl" :src="favorite.imageUrl" :alt="`${favorite.name} 대표 이미지`" />
           <span v-else>이미지 없음</span>
