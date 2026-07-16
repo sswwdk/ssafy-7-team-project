@@ -318,14 +318,12 @@ p {
   background: var(--danger);
 }
 
-.metric-grid,
 .info-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
 }
 
-.metric-card,
 .info-card,
 .timeline-card,
 .post-card {
@@ -334,18 +332,6 @@ p {
   background: var(--surface);
 }
 
-.metric-card {
-  display: grid;
-  gap: 6px;
-  padding: 24px;
-}
-
-.metric-card strong {
-  color: var(--primary-dark);
-  font-size: 2rem;
-}
-
-.metric-card span,
 .help-text,
 .post-card-meta,
 .info-card small {
@@ -1602,7 +1588,6 @@ p {
     padding: 28px 22px;
   }
 
-  .metric-grid,
   .info-grid,
   .filter-bar,
   .festival-summary-grid {

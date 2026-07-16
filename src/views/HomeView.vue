@@ -5,12 +5,9 @@ import PostCard from '@/components/community/PostCard.vue'
 import { usePosts } from '@/composables/usePosts'
 import { SELECTED_REGION } from '@/constants/region'
 import { ROUTE_NAMES } from '@/constants/routes'
-import { getFestivalItemsForDate, getRegionItems } from '@/services/regionDataService'
 import { getSeoulWeather } from '@/services/weatherService'
 
 const { posts, refreshPosts } = usePosts()
-const regionItemCount = getRegionItems().length
-const todayFestivalCount = getFestivalItemsForDate().length
 const recentPosts = computed(() => posts.value.slice(0, 3))
 const weather = ref(null)
 const weatherError = ref('')
@@ -102,21 +99,6 @@ onUnmounted(() => {
             <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a>
           </small>
         </template>
-      </article>
-    </section>
-
-    <section class="metric-grid" aria-label="서비스 현황">
-      <article class="metric-card">
-        <strong>{{ regionItemCount }}</strong>
-        <span>지역정보</span>
-      </article>
-      <article class="metric-card">
-        <strong>{{ posts.length }}</strong>
-        <span>현재 브라우저 게시글</span>
-      </article>
-      <article class="metric-card">
-        <strong>{{ todayFestivalCount }}</strong>
-        <span>오늘의 축제·행사</span>
       </article>
     </section>
 
