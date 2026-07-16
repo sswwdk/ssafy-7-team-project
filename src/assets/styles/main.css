@@ -1242,15 +1242,59 @@ p {
   right: 24px;
   bottom: 24px;
   z-index: 50;
-  width: 60px;
-  height: 60px;
-  border: 0;
-  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 35%);
+  border-radius: 999px;
   color: #fff;
   background: var(--primary);
   box-shadow: 0 16px 40px rgb(15 118 110 / 35%);
   cursor: pointer;
   font-weight: 800;
+  transition: width 0.2s ease, background 0.2s ease;
+}
+
+.chatbot-floating-button:hover,
+.chatbot-floating-button:focus-visible {
+  justify-content: flex-start;
+  width: 12rem;
+  padding: 0 1rem;
+  background: var(--primary-dark);
+}
+
+.chatbot-button-icon {
+  display: grid;
+  box-sizing: border-box;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  padding: 4px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 18%);
+  place-items: center;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.chatbot-button-label {
+  max-width: 0;
+  overflow: hidden;
+  margin-left: 0;
+  opacity: 0;
+  white-space: nowrap;
+  transition: max-width 0.2s ease, margin 0.2s ease, opacity 0.15s ease;
+}
+
+.chatbot-floating-button:hover .chatbot-button-label,
+.chatbot-floating-button:focus-visible .chatbot-button-label {
+  max-width: 8rem;
+  margin-left: 0.5rem;
+  opacity: 1;
 }
 
 .chatbot-panel {
